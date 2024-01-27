@@ -1,0 +1,30 @@
+## Cargo.toml, Jul/2022, Savio S Machado <sav@loophole.cc>
+
+[package]
+name = "rusty"
+version = "0.1.3"
+edition = "2021"
+description = "Random snippets written while reading the Rust Programming Language book."
+repository = "git@gitlab.com:savio.sena/rusty.git"
+license = "MIT"
+readme = "README.md"
+homepage = "http://loophole.cc/sav/rusty.git"
+keywords = ["learning", "snippets", "random"]
+publish = false
+
+[profile.release]
+panic = 'abort'
+
+[profile.dev]
+opt-level = 1
+debug = true
+debug-assertions = true
+
+[dependencies]
+rand = "0.8.5"
+cargo-modules = "0.5.9"
+unicode-segmentation = "1.7.1"
+rust-analyzer = "0.0.1"
+
+[dev-dependencies]
+env_logger = "0.5"
