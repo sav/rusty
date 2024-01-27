@@ -1,14 +1,14 @@
 ## TODO: add `cargo fmt --check`
 ## TODO: add `cargo fix --bin "rusty"`
 
-EXAMPLES := env1 error1 error2 error3 error4
+EXAMPLES := env1 error1 error2 error3 error4 misc1
 
 all: check lint test run-debug
 
 update:
 	cargo update
 
-build-debug:
+debug:
 	cargo build
 
 check:
@@ -27,9 +27,10 @@ test:
 	@echo "~~~ $< ~~~"
 	@RUST_BACKTRACE=full cargo run --example $@ || true
 
-examples: $(EXAMPLES) /tmp/hello.txt
+run-examples: $(EXAMPLES) /tmp/hello.txt
 
-build-examples:
+.PHONY: examples
+examples:
 	cargo build --examples
 
 lint:
