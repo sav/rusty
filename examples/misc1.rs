@@ -1,5 +1,12 @@
 // misc1.rs
 
+use std::any::type_name;
+
+fn type_of<T>(_: &T) -> String {
+     let type_name = type_name::<T>();
+    type_name.to_string()
+}
+
 fn tuple() {
     let t = ([1; 2], [3; 4]);
     println!("{}", t.0[0]);
@@ -109,6 +116,14 @@ fn refptr() {
     assert_eq!(s_len1, s_len2);
 }
 
+fn pfmt() {
+    let x: Box<u32> = Box::new(u32::MAX);
+    assert_eq!(u32::MAX, ((1u64 << 32) - 1) as u32);
+    println!("{:p} <{}> -> 0x{:x}", x, type_of(&x), *x);
+    let y = &*x;
+    println!("{:p} <{}> -> 0x{:x}", y, type_of(&y), *y);
+}
+
 fn main() {
     println!("-=- tuple() -=-");
     tuple();
@@ -139,4 +154,7 @@ fn main() {
 
     println!("-=- refptr() -=-");
     refptr();
+
+    println!("-=- fmt() -=-");
+    pfmt();
 }
