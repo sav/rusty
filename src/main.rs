@@ -1389,7 +1389,7 @@ fn ex_trait_4() {
 
 // impl<> Clone for str {
 //     fn clone(&self) -> str {
-// 	String::from(self).to_str()
+//     String::from(self).to_str()
 //     }
 // }
 
@@ -1397,8 +1397,8 @@ fn ex_trait_4() {
 //     if s1.len() >= s2.len() {
 //          s1
 //     } else {
-// 	s2
-//      }
+//          s2
+//     }
 // }
 
 fn ex_lifetime_1() {
@@ -1410,9 +1410,9 @@ fn ex_lifetime_1() {
 
     // println!("longest = {}", longest(*s1, *s2));
 
-    //     let string1 = String::from("abcd");
-    //     let string2 = "xyz";
+    // let string1 = String::from("abcd");
+    // let string2 = "xyz";
 
-    //     let result = longest(string1.as_str(), string2);
-    //     println!("The longest string is {}", result);
+    // let result = longest(string1.as_str(), string2);
+    // println!("The longest string is {}", result);
 }
