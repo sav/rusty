@@ -4,6 +4,7 @@
 // interactive version with quizzes: https://rust-book.cs.brown.edu
 
 use std::any::type_name;
+use std::fmt;
 
 fn type_of<T>(_: &T) -> String {
     type_name::<T>().to_string()
@@ -255,7 +256,7 @@ fn own5() {
     *num += 1;
 
     println!("third element is {}", *num);
-    println!("vector is now {:?}", v);
+    println!("vector is now {v:?}");
 }
 
 fn own6() {
@@ -271,14 +272,14 @@ fn ascii_capitalize(v: &mut Vec<char>) {
         let up = c.to_ascii_uppercase();
         v[0] = up;
     } else {
-        println!("{:?}", v);
+        println!("{v:?}");
     }
 }
 
 fn own7() {
     let mut v: Vec<char> = vec!['a', 'b', 'c'];
     ascii_capitalize(&mut v);
-    println!("{:?}", v);
+    println!("{v:?}");
 }
 
 fn own8() {
@@ -303,7 +304,7 @@ fn own9() {
     v.push(String::from("B"));
     v.push(String::from("C"));
     let p = first(&v);
-    println!("{:?}", p);
+    println!("{p:?}");
 }
 
 fn move1() {
@@ -554,6 +555,17 @@ fn slice1() {
     }
 }
 
+fn slice2() {
+    println!("{:?}", &[123]); // array
+    println!("{:?}", &[123][..]); // slice
+
+    println!("{:p}", &[123]);
+    println!("{:p}", &[123][..]);
+
+    println!("{}", type_of(&[123]));
+    println!("{}", type_of(&(&[123][..])));
+}
+
 fn tuplestruct1() {
     struct Color(i32, i32, i32);
 
@@ -727,6 +739,158 @@ fn deref1() {
     println!("{}", ***y);
 }
 
+enum MyEnum {
+    MyField(i32),
+}
+
+impl fmt::Debug for MyEnum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            MyEnum::MyField(val) => write!(f, "MyField({})", val),
+        }
+    }
+}
+
+fn enum1() {
+    let c1 : MyEnum = MyEnum::MyField(1);
+    println!("{:#?}", c1);
+}
+
+fn option1() {
+    let mut x = Some(5);
+    println!("{} {}", x.is_some(), x.unwrap());
+
+    x = None;
+    println!("{} {}", x.is_none(), x.unwrap_or(-1));
+
+    let text: Option<String> = Some("hello world".to_string());
+    let text_len: Option<usize> = text.as_ref().map(|s| s.len());
+    println!("{} {}", text.unwrap(), text_len.unwrap());
+
+    x = Some(5);
+    match x.as_mut() {
+        Some(v) => *v = 100,
+        None => {},
+    }
+    assert_eq!(x, Some(100));
+}
+
+fn plus_one(x: Option<i32>) -> Option<i32> {
+    match x {
+        None => todo!(), // indicates unfinished code.
+        Some(i) => Some(i + 1),
+    }
+}
+
+fn option2() {
+    let five = Some(5);
+    let six = plus_one(five);
+    println!("{}", six.unwrap());
+}
+
+fn option3() {
+    let dice_roll = 9;
+    match dice_roll {
+        3 => add_fancy_hat(),
+        7 => remove_fancy_hat(),
+        other => move_player(other),
+    }
+    fn add_fancy_hat() {}
+    fn remove_fancy_hat() {}
+    fn move_player(x: u8) { println!("{x}"); }
+}
+
+fn option4() {
+    let dice_roll = 9;
+      match dice_roll {
+        3 => add_fancy_hat(),
+        7 => remove_fancy_hat(),
+        _ => reroll(),
+    }
+
+    fn add_fancy_hat() {}
+    fn remove_fancy_hat() {}
+    fn reroll() { println!("reroll"); }
+}
+
+fn option5() {
+    let s: Option<String> = Some(String::from("hello world"));
+    match s {
+        Some(_) => println!("Some"), // replacing Some(_) with Some(s) will crash the compiler.
+        None => println!("None"),
+    };
+    match &s {
+        Some(s) => println!("{s}"),
+        None => println!("None"),
+    };
+    println!("{s:?}");
+}
+
+enum Location {
+    _Point(i32),
+    Range(i32, i32)
+}
+
+fn option6() {
+    let l: Location = Location::Range(0, 5);
+    let n = match l {
+        Location::_Point(_) => -1,
+        Location::Range(0, _) => 0,
+        Location::Range(n, 5) => n,
+        _ => -2
+    };
+    println!("{n:#?}");
+}
+
+fn option7() {
+    #[derive(Debug)]
+    enum Either {
+        _Left(usize),
+        Right(String)
+    }
+    let x = Either::Right(String::from("Hello world"));
+    let value = match &x {
+        Either::_Left(n) => *n,
+        Either::Right(s) => s.len()
+    };
+    println!("{x:?} {value}");
+}
+
+fn option8() {
+    let config_max = Some(3u8);
+    // You can think of if let as syntatic sugar for match
+    if let Some(max) = config_max {
+        println!("The maximum is configured to be {}", max);
+    }
+    let mut count = 0;
+    if let Some(state) = config_max {
+        println!("State quarter from {:?}!", state);
+    } else {
+        count += 1;
+    }
+    println!("{count}");
+}
+
+fn option9() {
+    let f = |o: &Option<String>| o.is_none();
+    let v = Some(String::from("hello"));
+    println!("{}", f(&v));
+    println!("{}", f(&None));
+}
+
+fn collection5() {
+ let v = vec![1, 2, 3, 4, 5];
+
+    let third: &i32 = &v[2];
+    println!("The third element is {third}");
+
+    let third: Option<&i32> = v.get(2);
+    match third {
+        Some(third) => println!("The third element is {third}"),
+        None => println!("There is no third element."),
+    }
+}
+
 fn main() {
     println!("-=- tuple() -=-");
     tuple();
@@ -824,6 +988,9 @@ fn main() {
     println!("-=- slice1() -=-");
     slice1();
 
+    println!("-=- slice2() -=-");
+    slice2();
+
     println!("-=- tuplestruct1() -=-");
     tuplestruct1();
 
@@ -844,4 +1011,37 @@ fn main() {
 
     println!("-=- deref1() -=-");
     deref1();
+
+    println!("-=- enum1() -=-");
+    enum1();
+
+    println!("-=- option1() -=-");
+    option1();
+
+    println!("-=- option2() -=-");
+    option2();
+
+    println!("-=- option3() -=-");
+    option3();
+
+    println!("-=- option4() -=-");
+    option4();
+
+    println!("-=- option5() -=-");
+    option5();
+
+    println!("-=- option6() -=-");
+    option6();
+
+    println!("-=- option7() -=-");
+    option7();
+
+    println!("-=- option8() -=-");
+    option8();
+
+    println!("-=- option9() -=-");
+    option9();
+
+    println!("-=- collection5() -=-");
+    collection5();
 }

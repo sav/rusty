@@ -10,6 +10,11 @@ pub(crate) use std::cmp::Ordering;
 #[cfg(not(debug_assertions))]
 use std::io;
 
+pub mod module;
+use crate::module::submodule;
+use crate::module::{*, submodule as sub};
+
+
 fn main() {
     ex_const_1();
 
@@ -116,6 +121,14 @@ fn main() {
     ex_trait_4();
 
     ex_lifetime_1();
+
+    func(); // module::func
+
+    subfunc(); // module::pfunc (since it does `pub use submodule::*`.
+
+    submodule::subfunc();
+
+    sub::subfunc();
 
     ex_guess_game();
 }
@@ -732,8 +745,8 @@ fn ex_enum_4_options() {
      * trying to add an i8 to an Option<i8>:
      *
      * let x: i8 = 5;
-     * let y: Option<i8> = Some(5); // no implementation for
-     *   //  `i8 + std::option::Option<i8>` let sum = x + y;
+     * let y: Option<i8> = Some(5);
+     * let sum = x + y; // no implementation for `i8 + Option<i8>`
      *
      * In other words, you have to convert an Option<T> to a T
      * before you can perform T operations with it. That helps
