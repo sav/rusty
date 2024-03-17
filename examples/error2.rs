@@ -23,7 +23,30 @@ fn handle_file(path: &str) {
     println!("{:?}\n~~~ ~~~ ~~~\n", f);
 }
 
+fn handle_file_alt() {
+    // a construct similar to the above but does not contain any `match`,
+    // and thus it is cleaner to read.
+    let greeting_file = File::open("/etc/motd").unwrap_or_else(|error| {
+        if error.kind() == io::ErrorKind::NotFound {
+            File::create("motd").unwrap_or_else(|error| {
+                panic!("Problem creating the file: {:?}", error);
+            })
+        } else {
+            panic!("Problem opening the file: {:?}", error);
+        }
+    });
+    println!("{:?}", greeting_file);
+}
+
+fn handle_file_expect(path: &str) {
+    let f = File::open(path)
+        .expect("file not accessible: {path}");
+    println!("file is accessible: {f:?}");
+}
+
 fn main() {
     handle_file("/tmp/hello.txt");
-    handle_file("/dev/hello.txt");
+    handle_file_alt();
+    handle_file_expect("/etc/motd");
+    handle_file("/dev/hello.txt"); // PermissionDenied
 }

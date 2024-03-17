@@ -12,8 +12,7 @@ use std::io;
 
 pub mod module;
 use crate::module::submodule;
-use crate::module::{*, submodule as sub};
-
+use crate::module::{submodule as sub, *};
 
 fn main() {
     ex_const_1();
@@ -101,6 +100,10 @@ fn main() {
     ex_collections_string_3();
 
     ex_collections_hashmap_1();
+
+    ex_collections_hashmap_2();
+
+    ex_ownership_inventory_2();
 
     ex_generic_1();
 
@@ -1151,6 +1154,91 @@ fn ex_collections_hashmap_1() {
     }
 
     println!("{:?}", map);
+}
+
+fn ex_collections_hashmap_2() {
+    let mut scores = HashMap::new();
+
+    scores.insert(String::from("Blue"), 10);
+    scores.insert(String::from("Yellow"), 50);
+
+    let team_name = String::from("Blue");
+    let score = scores.get(&team_name).copied().unwrap_or(0);
+
+    println!("{score}");
+
+    let mut scores = HashMap::new();
+
+    scores.insert(String::from("Blue"), 10);
+    scores.insert(String::from("Yellow"), 50);
+
+    for (key, value) in &scores {
+        println!("{key}: {value}");
+    }
+
+    let field_name = String::from("Favorite color");
+    let field_value = String::from("Blue");
+
+    let mut map = HashMap::new();
+    map.insert(field_name, field_value);
+
+    // overwriting a value
+    let mut scores = HashMap::new();
+
+    scores.insert(String::from("Blue"), 10);
+    scores.insert(String::from("Blue"), 25);
+
+    println!("{:?}", scores);
+
+    // adding a key and value only if a key isn't present
+    let mut scores = HashMap::new();
+    scores.insert(String::from("Blue"), 10);
+
+    scores.entry(String::from("Yellow")).or_insert(50);
+    scores.entry(String::from("Blue")).or_insert(50);
+
+    println!("{:?}", scores);
+
+    // updating a value based on the old value
+    let text = "hello world wonderful world";
+
+    let mut map = HashMap::new();
+
+    for word in text.split_whitespace() {
+        let count = map.entry(word).or_insert(0);
+        *count += 1;
+    }
+
+    println!("{:?}", map);
+}
+
+fn ex_ownership_inventory_2() {
+    fn remove_zeroes_inplace(v: &mut Vec<i32>) {
+        for i in (0..v.len()).rev() {
+            if v[i] == 0 {
+                v.remove(i);
+                v.shrink_to_fit();
+            }
+        }
+    }
+    let mut v1 = vec![0, 1, 0, 2, 0, 3, 0, 4, 0, 5, 0];
+    remove_zeroes_inplace(&mut v1);
+    println!("{v1:?}");
+
+    let v1 = vec![1; 100];
+    println!("{v1:?}");
+
+    let mut v1 = vec![5, 5, 0];
+    println!("{v1:?}");
+
+    fn lennfst(v: &mut Vec<i32>) {
+        let n = v.len();
+        let t = &mut v[0];
+        println!("{n} {t}"); // can't add {v:?} here.
+        println!("{v:?}");
+    }
+
+    lennfst(&mut v1);
 }
 
 /* Listing 10-4 and Listing 10-15 */

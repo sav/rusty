@@ -3,8 +3,10 @@
 // further examples form `the rust programming language`, but from this new
 // interactive version with quizzes: https://rust-book.cs.brown.edu
 
+use core::slice::*;
 use std::any::type_name;
 use std::fmt;
+use std::ops::*;
 
 fn type_of<T>(_: &T) -> String {
     type_name::<T>().to_string()
@@ -672,7 +674,7 @@ fn assocfunc3() {
     impl Rectangle {
         fn set_to_max(&mut self, other: Self) {
             *self = self.max(other); // exists for mutable reference.
-            // Requires #[derive(Copy, Clone)] struct Rectangle {}.
+                                     // Requires #[derive(Copy, Clone)] struct Rectangle {}.
 
             // Notice that unlike before, self.max(other) no longer requires the O permission
             // on *self or other. Remember that self.max(other) desugars to Rectangle::max(*self, other).
@@ -698,8 +700,14 @@ fn assocfunc3() {
             // previously in *self (illustrated by `drop(*self)'.
         }
     }
-    let mut rect4 = Rectangle { width: 0, height: 1 };
-    let rect5 = Rectangle { width: 1, height: 0 };
+    let mut rect4 = Rectangle {
+        width: 0,
+        height: 1,
+    };
+    let rect5 = Rectangle {
+        width: 1,
+        height: 0,
+    };
     rect4.set_to_max(rect5);
 }
 
@@ -752,7 +760,7 @@ impl fmt::Debug for MyEnum {
 }
 
 fn enum1() {
-    let c1 : MyEnum = MyEnum::MyField(1);
+    let c1: MyEnum = MyEnum::MyField(1);
     println!("{:#?}", c1);
 }
 
@@ -770,7 +778,7 @@ fn option1() {
     x = Some(5);
     match x.as_mut() {
         Some(v) => *v = 100,
-        None => {},
+        None => {}
     }
     assert_eq!(x, Some(100));
 }
@@ -797,12 +805,14 @@ fn option3() {
     }
     fn add_fancy_hat() {}
     fn remove_fancy_hat() {}
-    fn move_player(x: u8) { println!("{x}"); }
+    fn move_player(x: u8) {
+        println!("{x}");
+    }
 }
 
 fn option4() {
     let dice_roll = 9;
-      match dice_roll {
+    match dice_roll {
         3 => add_fancy_hat(),
         7 => remove_fancy_hat(),
         _ => reroll(),
@@ -810,7 +820,9 @@ fn option4() {
 
     fn add_fancy_hat() {}
     fn remove_fancy_hat() {}
-    fn reroll() { println!("reroll"); }
+    fn reroll() {
+        println!("reroll");
+    }
 }
 
 fn option5() {
@@ -828,7 +840,7 @@ fn option5() {
 
 enum Location {
     _Point(i32),
-    Range(i32, i32)
+    Range(i32, i32),
 }
 
 fn option6() {
@@ -837,7 +849,7 @@ fn option6() {
         Location::_Point(_) => -1,
         Location::Range(0, _) => 0,
         Location::Range(n, 5) => n,
-        _ => -2
+        _ => -2,
     };
     println!("{n:#?}");
 }
@@ -846,12 +858,12 @@ fn option7() {
     #[derive(Debug)]
     enum Either {
         _Left(usize),
-        Right(String)
+        Right(String),
     }
     let x = Either::Right(String::from("Hello world"));
     let value = match &x {
         Either::_Left(n) => *n,
-        Either::Right(s) => s.len()
+        Either::Right(s) => s.len(),
     };
     println!("{x:?} {value}");
 }
@@ -878,17 +890,148 @@ fn option9() {
     println!("{}", f(&None));
 }
 
-fn collection5() {
- let v = vec![1, 2, 3, 4, 5];
+fn question_mark_operator_on_option(text: &str) -> Option<char> {
+    text.lines().next()?.chars().last()
+}
 
+fn option10() {
+    println!("{}", question_mark_operator_on_option("abcdefg").unwrap_or('-'));
+    println!("{}", question_mark_operator_on_option("").unwrap_or('-'));
+}
+
+fn collection5() {
+    let v = vec![1, 2, 3, 4, 5];
+
+    // usual way to reference a value stored in a vector.
     let third: &i32 = &v[2];
     println!("The third element is {third}");
 
-    let third: Option<&i32> = v.get(2);
+    let third: Option<&i32> = v.get(2); // an alternative way to referece a value stored in a vector
     match third {
         Some(third) => println!("The third element is {third}"),
         None => println!("There is no third element."),
     }
+
+    // alternative way using `if let` idiom.
+    if let Some(third) = v.get(9) {
+        println!("The third element is {third}");
+    } else {
+        println!("There is no third element.");
+    }
+}
+
+fn collection6() {
+    let v = vec![1, 2, 3];
+    for n_ref in &v {
+        let n_plus_one: i32 = *n_ref + 1;
+        println!("{n_plus_one}");
+    }
+
+    let mut v = vec![1, 2, 3];
+    for n_ref in &mut v {
+        *n_ref += 50;
+    }
+
+    let til = 3;
+    for i in 0..til {
+        println!("{}", v[i]);
+    }
+
+    let mut v = Vec::new();
+    let s = String::from("hello");
+    v.push(s);
+    v[0].push_str("world");
+    println!("{}", v[0]);
+
+    let v = vec![String::from("hello")];
+    if let Some(s) = v.get(0) {
+        println!("{s}");
+    } else {
+        println!("none.");
+    }
+
+    let mut s = v[0].clone();
+    s.push_str("world");
+    println!("{s}");
+}
+
+fn iter1() {
+    let mut v: Vec<i32> = vec![1, 2];
+    let mut iter: Iter<'_, i32> = v.iter();
+    let n1: &i32 = iter.next().unwrap();
+    let n2: &i32 = iter.next().unwrap();
+    let end: Option<&i32> = iter.next();
+    println!("{v:#?} {n1} {n2} {end:?}");
+    v.push(3);
+}
+
+fn iter2() {
+    // one way to iterate without using a pointer is to use Range.
+    let mut v: Vec<i32> = vec![1, 2];
+    let mut iter: Range<usize> = 0..v.len();
+    let i1: usize = iter.next().unwrap();
+    let n1: &i32 = &v[i1];
+    println!("{v:?} {iter:?} {i1} {n1}");
+    v.push(3);
+}
+
+fn iter3() {
+    let mut v = vec![1, 2, 3];
+    for i in 0..v.len() {
+        v[i] += 1;
+    }
+    println!("{v:?}");
+
+    let mut v: Vec<i32> = vec![1, 2, 3];
+    let mut v2: Vec<&mut i32> = Vec::new();
+    for i in &mut v {
+        v2.push(i);
+    }
+
+    *v2[0] = 5;
+    let a = *v2[0];
+    let b = v[0];
+    println!("{a} {b}");
+}
+
+fn str1() {
+    let s1 = String::from("hello");
+    let s2 = String::from("world");
+    // the reason to use this particular expression with the `+` operator has to do with the signature of the add function:
+    // fn add(self, s: &str) ->  String {...}
+    // we can see in the signature that add takes ownership of self (because it does not have an &).
+    let s3 = s1 + &s2;
+    // so, s1 is now unusable here, as it was moved.
+    println!("{}", s3);
+
+    // the behavior of the `+` operator can get unwieldy, for example:
+    let s1 = String::from("tic");
+    let s2 = String::from("tac");
+    let s3 = String::from("toe");
+    let s = s1 + "-" + &s2 + "-" + &s3; // a bit convoluted perhaps, and
+    // allocates in the heap many times (one for each time + is called, at max).
+    // so it's definetely better to use format!(), instead.
+    println!("{s}");
+
+    let s1 = String::from("tic");
+    let s2 = String::from("tac");
+    let s3 = String::from("toe");
+    let s = format!("{s1}-{s2}-{s3}");
+    println!("{s}");
+
+    let mut s1 = String::from("hello");
+    s1.push_str("world");
+    println!("{s1}");
+}
+
+fn str2() { // Rust strings does not support indexing.
+    let s1 = String::from("hello");
+    // String is a wrapper over a Vec<u8>.
+    let s2 = String::from("Здравствуйте"); // 12 glyphs, 24 bytes.
+    let s3 = "नमस्ते".to_string();
+    println!("{} {} {}", s1.len(), s2.len(), s3.len());
+    // let answer = &s2[0];
+    // println!("{answer}"); <- fails.
 }
 
 fn main() {
@@ -1042,6 +1185,27 @@ fn main() {
     println!("-=- option9() -=-");
     option9();
 
+    println!("-=- option10() -=-");
+    option10();
+
     println!("-=- collection5() -=-");
     collection5();
+
+    println!("-=- collection6() -=-");
+    collection6();
+
+    println!("-=- iter1() -=-");
+    iter1();
+
+    println!("-=- iter2() -=-");
+    iter2();
+
+    println!("-=- iter3() -=-");
+    iter3();
+
+    println!("-=- str1() -=-");
+    str1();
+
+    println!("-=- str2() -=-");
+    str2();
 }

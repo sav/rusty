@@ -13,6 +13,7 @@ keywords = ["learning", "snippets", "random"]
 publish = false
 
 [profile.release]
+## abort on panic instead of unwinding the stack.
 panic = 'abort'
 
 [profile.dev]

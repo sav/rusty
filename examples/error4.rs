@@ -1,46 +1,66 @@
 use std::fs::File;
 use std::io::{self, Read};
 
-fn read_user_from_file_syntatic_sugar_chained(path: &str) -> Result<String, io::Error> {
-    let mut s = String::new();
-    File::open(path)?.read_to_string(&mut s)?;
-    Ok(s)
-}
+// long version without the `?` operator.
 
-fn read_user_from_file_syntatic_sugar(path: &str) -> Result<String, io::Error> {
-    let mut f = File::open(path)?;
-    let mut s = String::new();
-    f.read_to_string(&mut s)?;
-    Ok(s)
-}
+fn read_username_from_file() -> Result<String, io::Error> {
+    let username_file_result = File::open("/etc/passwd");
 
-fn read_user_from_file(path: &str) -> Result<String, io::Error> {
-    let f = File::open(path);
-
-    let mut f = match f {
+    let mut username_file = match username_file_result {
         Ok(file) => file,
         Err(e) => return Err(e),
     };
 
-    let mut s = String::new();
+    let mut username = String::new();
 
-    match f.read_to_string(&mut s) {
-        Ok(_) => Ok(s),
+    match username_file.read_to_string(&mut username) {
+        Ok(_) => Ok(username),
         Err(e) => Err(e),
     }
 }
 
+// much shorter version with the `?` operator.
+
+fn read_username_from_file_short() -> Result<String, io::Error> {
+    let mut username_file = File::open("/etc/passwd")?;
+    let mut username = String::new();
+    username_file.read_to_string(&mut username)?;
+    Ok(username)
+}
+
+// using chained `?` operators.
+
+fn read_username_from_file_chained() -> Result<String, io::Error> {
+    let mut username = String::new();
+    File::open("hello.txt")?.read_to_string(&mut username)?;
+    Ok(username)
+}
+
+// one-liner, available in the api.
+use std::fs;
+
+fn read_username_from_file_oneliner() -> Result<String, io::Error> {
+    fs::read_to_string("/etc/passwd")
+}
+
 fn main() {
-    match read_user_from_file("/tmp/hello.txt") {
-        Ok(user) => println!("user(1) = {}", user),
-        Err(e) => panic!("error(1): {}", e),
-    }
-    match read_user_from_file_syntatic_sugar("/tmp/hello.txt") {
-        Ok(user) => println!("user(2) = {}", user),
-        Err(e) => panic!("error(2): {}", e),
-    }
-    match read_user_from_file_syntatic_sugar_chained("/tmp/hello.txt") {
-        Ok(user) => println!("user(3) = {}", user),
-        Err(e) => panic!("error(3): {}", e),
-    }
+    match read_username_from_file() {
+        Ok(s) => println!("{s}"),
+        Err(e) => println!("{e}"),
+    };
+
+    match read_username_from_file_short() {
+        Ok(s) => println!("{s}"),
+        Err(e) => println!("{e}"),
+    };
+
+    match read_username_from_file_chained() {
+        Ok(s) => println!("{s}"),
+        Err(e) => println!("{e}"),
+    };
+
+    match read_username_from_file_oneliner() {
+        Ok(s) => println!("{s}"),
+        Err(e) => println!("{e}"),
+    };
 }
