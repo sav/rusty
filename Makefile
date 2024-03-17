@@ -1,7 +1,7 @@
 ## TODO: add `cargo fmt --check`
 ## TODO: add `cargo fix --bin "rusty"`
 
-EXAMPLES := env1 error1 error2 error3 error4 misc1
+EXAMPLES := env1 error1 error2 error3 error4 error5 error6
 
 all: check lint test run-debug
 
