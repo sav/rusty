@@ -1,4 +1,4 @@
-Rusty v0.1.3
+Rusty v0.1.4
 ============
 
 Some Rust snippets I wrote to learn the language and eventually to serve as
@@ -6,6 +6,9 @@ a reminder for the future me. All the following code was either copied from
 or inspired in this great book:
 
  * [The "Rust programming language" Book](https://doc.rust-lang.org/book)
+
+ Also, there's a new version of the book with interactive quizzes available [here](https://rust-book.cs.brown.edu/).
+
 
 Usage
 -----
