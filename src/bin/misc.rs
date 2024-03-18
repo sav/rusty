@@ -568,6 +568,24 @@ fn slice2() {
     println!("{}", type_of(&(&[123][..])));
 }
 
+fn largest(list: &[i32]) -> &i32 {
+    let mut largest = &list[0];
+    for item in list {
+        if item > largest {
+            largest = item;
+        }
+    }
+    largest
+}
+
+fn slice3() {
+    let l1 = [1, 2, 3, 4, 100];
+    println!("{}", largest(&l1));
+
+    let l2 = [92, 34, 100, 89, 54, 2, 43, 8];
+    println!("{}", largest(&l2));
+}
+
 fn tuplestruct1() {
     struct Color(i32, i32, i32);
 
@@ -895,7 +913,10 @@ fn question_mark_operator_on_option(text: &str) -> Option<char> {
 }
 
 fn option10() {
-    println!("{}", question_mark_operator_on_option("abcdefg").unwrap_or('-'));
+    println!(
+        "{}",
+        question_mark_operator_on_option("abcdefg").unwrap_or('-')
+    );
     println!("{}", question_mark_operator_on_option("").unwrap_or('-'));
 }
 
@@ -1009,8 +1030,8 @@ fn str1() {
     let s2 = String::from("tac");
     let s3 = String::from("toe");
     let s = s1 + "-" + &s2 + "-" + &s3; // a bit convoluted perhaps, and
-    // allocates in the heap many times (one for each time + is called, at max).
-    // so it's definetely better to use format!(), instead.
+                                        // allocates in the heap many times (one for each time + is called, at max).
+                                        // so it's definetely better to use format!(), instead.
     println!("{s}");
 
     let s1 = String::from("tic");
@@ -1024,7 +1045,8 @@ fn str1() {
     println!("{s1}");
 }
 
-fn str2() { // Rust strings does not support indexing.
+fn str2() {
+    // Rust strings does not support indexing.
     let s1 = String::from("hello");
     // String is a wrapper over a Vec<u8>.
     let s2 = String::from("Здравствуйте"); // 12 glyphs, 24 bytes.
@@ -1033,6 +1055,376 @@ fn str2() { // Rust strings does not support indexing.
     // let answer = &s2[0];
     // println!("{answer}"); <- fails.
 }
+
+struct Point<T, U> {
+    x: T,
+    y: U,
+}
+
+impl<T, U> Point<T, U> {
+    fn x(&self) -> &T {
+        &self.x
+    }
+    fn y(&self) -> &U {
+        &self.y
+    }
+}
+
+// You might be wondering whether there is a runtime cost when using generic type parameters.
+// The good news is that using generic types won't make your program run any slower than it
+// would with concrete types.
+
+// Rust accomplishes this by performing monomorphization of the code using generics at compile time.
+// Monomorphization is the process of turning generic code into specific code by filling in the
+// concrete types that are used when compiled.
+
+impl Point<f32, f32> {
+    // distance from origin.
+    fn distance(&self) -> f32 {
+        (self.x.powi(2) + self.y.powi(2)).sqrt()
+    }
+}
+
+fn generic1() {
+    let a = Point { x: 5, y: 10 };
+    let b = Point { x: 5.0, y: 10.0 };
+    let c = Point { x: 5, y: 10.0 };
+
+    println!("p.x = {}, p.y = {}", a.x(), a.y());
+    println!(
+        "p.x = {}, p.y = {} -> distance = {}",
+        b.x(),
+        b.y(),
+        b.distance()
+    );
+    println!("p.x = {}, p.y = {}", c.x(), c.y());
+}
+
+pub mod trait1 {
+    pub trait Summary {
+        fn summarize_author(&self) -> String {
+            "<empty>".to_string()
+        }
+
+        fn summarize(&self) -> String {
+            format!("(Read more from {}...)", self.summarize_author())
+        }
+    }
+
+    pub struct Tweet {
+        pub username: String,
+        pub content: String,
+        pub reply: bool,
+        pub retweet: bool,
+    }
+
+    impl Summary for Tweet {
+        fn summarize_author(&self) -> String {
+            format!("@{}", self.username)
+        }
+        fn summarize(&self) -> String {
+            format!("{}: {}", self.username, self.content)
+        }
+    }
+}
+
+use crate::trait1::*;
+
+struct Pweet {}
+
+impl Summary for Pweet {}
+
+fn trait1() {
+    let tweet = Tweet {
+        username: String::from("savi0"),
+        content: String::from("of course, as you probably already know, people"),
+        reply: false,
+        retweet: false,
+    };
+    println!("1 new tweet: {}", tweet.summarize());
+    println!("1 new tweet: {}", Pweet {}.summarize_author());
+}
+
+pub trait Pointer {
+    fn my(&self) -> String {
+        format!("{:p}", self)
+    }
+}
+
+impl Pointer for String {}
+
+pub fn print_ptr(p: &impl Pointer) {
+    println!("pointer: {}", p.my());
+}
+
+// The impl Trait syntax works for straightforward cases but is actually syntax
+// sugar for a longer form known as a trait bound; it looks like this:
+
+pub fn address<T: Pointer>(item: &T) -> String {
+    // This longer form is equivalent to the example in the previous section but
+    // is more verbose. We place trait bounds with the declaration of the generic
+    // type parameter after a colon and inside angle brackets.
+    format!("address: {:p}", item)
+}
+
+fn trait2() {
+    println!("pointer: {}", "foobar".to_string().my());
+    print_ptr(&"barfoo".to_string());
+    println!("{}", address(&"barfoo".to_string()));
+}
+
+use std::fmt::{Debug, Display};
+
+pub fn show1(item: &(impl Pointer + Display)) {
+    println!("{} @<{:p}>", item, item);
+}
+
+pub fn show2<T: Pointer + Display>(item: &T) {
+    println!("{} @<{:p}>", item, item);
+}
+
+pub fn show3<T: Display + Clone, U: Clone + Debug>(t: &T, u: &U) -> i32 {
+    println!("t = {}@<{:p}>, u = {:?}@<{:p}>", t, t, u, u);
+    0
+}
+
+pub fn show4<T, U>(t: &T, u: &U) -> i32
+where
+    T: Display + Clone,
+    U: Clone + Debug,
+{
+    println!("t = {}@<{:p}>, u = {:?}@<{:p}>", t, t, u, u);
+    0
+}
+
+pub fn addressable(s: &str) -> impl Pointer {
+    String::from(s)
+}
+
+fn trait3() {
+    show1(&"abc".to_string());
+    show2(&"cde".to_string());
+    show3(&"hello".to_string(), &["world"]);
+    show4(&"hello".to_string(), &["world"]);
+}
+
+fn displayable<T: Display>(t: T) -> impl Display {
+    t
+}
+
+fn trait4() {
+    let s = String::from("hello");
+    let mut s2 = displayable(s).to_string(); // without to_string()...
+    s2.push_str(" world"); //  s2 wouldn't have push_str(), and the code wouldn't compile.
+    println!("{s2}");
+}
+
+struct Pair<T> {
+    x: T,
+    y: T,
+}
+
+impl<T> Pair<T> {
+    fn new(x: T, y: T) -> Self {
+        Self { x, y }
+    }
+}
+
+// Conditionally implement method for this trait-bound.
+impl<T: Display + PartialOrd> Pair<T> {
+    fn cmp_display(&self) {
+        if self.x >= self.y {
+            println!("largest is x = {}", self.x);
+        } else {
+            println!("largest is y = {}", self.y);
+        }
+    }
+}
+
+// We can also conditionally implement a trait for any type that implements another trait.
+// Implementations of a trait on any type that satisfies the trait bounds are called blanket
+// implementations and are extensively used in the Rust standard library. For example,
+// the standard library implements the ToString trait on any type that implements the Display
+// trait. The impl block in the standard library looks similar to this code:
+//
+// impl<T: Display> ToString for T {
+//    // -- snip --
+// }
+//
+// let s = 3.to_string();
+
+fn trait5() {
+    let p1 = Pair::new(1, 2);
+    p1.cmp_display();
+}
+
+// Lifetime annotations don’t change how long any of the references live. Rather, they describe the
+// relationships of the lifetimes of multiple references to each other without affecting the lifetimes.
+//
+// The function signature now tells Rust that for some lifetime 'a, the function takes two parameters,
+// both of which are string slices that live at least as long as lifetime 'a. The function signature
+// also tells Rust that the string slice returned from the function will live at least as long as
+// lifetime 'a.
+//
+// In practice, it means that the lifetime of the reference returned by the longest function is the
+// same as the smaller of the lifetimes of the values referred to by the function arguments. These
+// relationships are what we want Rust to use when analyzing this code.
+//
+// Remember, when we specify the lifetime parameters in this function signature, we’re not changing
+// the lifetimes of any values passed in or returned. Rather, we’re specifying that the borrow checker
+// should reject any values that don’t adhere to these constraints.
+//
+// Note that the longest function doesn’t need to know exactly how long x and y will live, only that
+// some scope can be substituted for 'a that will satisfy this signature.
+//
+// When we pass concrete references to longest, the concrete lifetime that is substituted for 'a is
+// the part of the scope of x that overlaps with the scope of y. In other words, the generic lifetime
+// 'a will get the concrete lifetime that is equal to the smaller of the lifetimes of x and y.
+//
+// Because we’ve annotated the returned reference with the same lifetime parameter 'a, the returned
+// reference will also be valid for the length of the smaller of the lifetimes of x and y.
+//
+// Ultimately, lifetime syntax is about connecting the lifetimes of various parameters and return
+// values of functions.
+
+fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {
+    if x.len() >= y.len() {
+        x
+    } else {
+        y
+    }
+}
+
+fn shortest<'a>(x: &'a str, y: &'a str) -> &'a str {
+    if x.len() <= y.len() {
+        x
+    } else {
+        y
+    }
+}
+
+fn lifetime1() {
+    let s1 = "hello";
+    let s2 = "world";
+
+    println!("longest: {}", longest(s1, s2));
+    println!("shortest: {}", shortest("hello", "world"));
+
+    // Let’s look at how the lifetime annotations restrict the longest function by passing in
+    // references that have different concrete lifetimes. Listing 10-22 is a straightforward example.
+
+    let string1 = String::from("long string is long");
+
+    {
+        let string2 = String::from("xyz");
+        let result = longest(string1.as_str(), string2.as_str());
+        println!("The longest string is {}", result);
+    }
+
+    // The code below fails to compile:
+
+    // let string1 = String::from("long string is long");
+    // let result;
+    // {
+    //     let string2 = String::from("xyz");
+    //     result = longest(string1.as_str(), string2.as_str());
+    // }
+    // println!("The longest string is {}", result);
+}
+
+// We can define structs to hold references, but in that case we would need to add a lifetime
+// annotation on every reference in the struct’s definition.
+
+#[derive(Debug)]
+struct ImportantExcerpt<'a> {
+    // This annotation means an instance of `ImportantExcerpt` can’t outlive the reference
+    // it holds in its `part` field.
+    part: &'a str,
+}
+
+fn lifetime2() {
+    let s1 = String::from("abc def ghi");
+    let first = s1.split(' ').next().expect("couldn't find a space");
+    let i = ImportantExcerpt { part: first };
+    println!("{:?}, {}", i, i.part);
+}
+
+impl<'a> ImportantExcerpt<'a> {
+    fn level(&self) -> i32 {
+        3
+    }
+}
+
+impl<'a> ImportantExcerpt<'a> {
+    fn announce_and_return_part(&self, announcement: &str) -> &str {
+        println!("Attention please: {}", announcement);
+        self.part
+    }
+}
+
+fn lifetime3() {
+    let novel = String::from("Call me Ishmael. Some years ago...");
+    let first_sentence = novel.split('.').next().expect("Could not find a '.'");
+    let i = ImportantExcerpt {
+        part: first_sentence,
+    };
+    println!("{}", i.level());
+    i.announce_and_return_part(&novel);
+}
+
+fn longest_with_an_announcement<'a, T>(x: &'a str, y: &'a str, ann: T) -> &'a str
+where
+    T: Display,
+{
+    println!("Announcement! {}", ann);
+    if x.len() > y.len() {
+        x
+    } else {
+        y
+    }
+}
+
+fn lifetime4() {
+    let s: &'static str = "I have a static lifetime.";
+    println!("{:p}: {}", s, s);
+
+    let string1 = String::from("abcd");
+    let string2 = "xyz";
+
+    let result =
+        longest_with_an_announcement(string1.as_str(), string2, "Today is someone's birthday!");
+    println!("The longest string is {}", result);
+}
+
+// The compiler uses three rules to figure out the lifetimes of the references when there
+// aren’t explicit annotations. The first rule applies to input lifetimes, and the second
+// and third rules apply to output lifetimes.
+//
+// If the compiler gets to the end of the three rules and there are still references for
+// which it can’t figure out lifetimes, the compiler will stop with an error. These rules
+// apply to fn definitions as well as impl blocks.
+//
+// The first rule is that the compiler assigns a different lifetime parameter to each
+// lifetime in each input type. References like &'_ i32 needs a lifetime parameter,
+// and structures like ImportantExcerpt<'_> need a lifetime parameter. For example:
+//
+//  * The function fn foo(x: &i32) would get one lifetime parameter and become
+//    fn foo<'a>(x: &'a i32).
+//  * The function fn foo(x: &i32, y: &i32) would get two lifetime parameters
+//    and become fn foo<'a, 'b>(x: &'a i32, y: &'b i32).
+//  * The function fn foo(x: &ImportantExcerpt) would get two lifetime parameters
+//    and become fn foo<'a, 'b>(x: &'a ImportantExcerpt<'b>).
+//
+// The second rule is that, if there is exactly one input lifetime parameter, that
+// lifetime is assigned to all output lifetime parameters: fn foo<'a>(x: &'a i32) -> &'a i32.
+//
+// The third rule is that, if there are multiple input lifetime parameters, but one of
+// them is &self or &mut self because this is a method, the lifetime of self is assigned
+// to all output lifetime parameters. This third rule makes methods much nicer to read and
+// write because fewer symbols are necessary.
+
+// For further information on lifetime check out the "lifetime elision rules", or start here:
+// https://rust-book.cs.brown.edu/ch10-03-lifetime-syntax.html#lifetime-elision
 
 fn main() {
     println!("-=- tuple() -=-");
@@ -1134,6 +1526,9 @@ fn main() {
     println!("-=- slice2() -=-");
     slice2();
 
+    println!("-=- slice3() -=-");
+    slice3();
+
     println!("-=- tuplestruct1() -=-");
     tuplestruct1();
 
@@ -1208,4 +1603,34 @@ fn main() {
 
     println!("-=- str2() -=-");
     str2();
+
+    println!("-=- generic1() -=-");
+    generic1();
+
+    println!("-=- trait1() -=-");
+    trait1();
+
+    println!("-=- trait2() -=-");
+    trait2();
+
+    println!("-=- trait3() -=-");
+    trait3();
+
+    println!("-=- trait4() -=-");
+    trait4();
+
+    println!("-=- trait5() -=-");
+    trait5();
+
+    println!("-=- lifetime1() -=-");
+    lifetime1();
+
+    println!("-=- lifetime2() -=-");
+    lifetime2();
+
+    println!("-=- lifetime3() -=-");
+    lifetime3();
+
+    println!("-=- lifetime4() -=-");
+    lifetime4();
 }
