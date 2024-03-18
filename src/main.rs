@@ -1488,32 +1488,10 @@ fn ex_trait_4() {
     p.cmp_display();
 }
 
-// impl<> Clone for str {
-//     fn clone(&self) -> str {
-//     String::from(self).to_str()
-//     }
-// }
-
-// fn longest<T: 'static + ExactSizeIterator>(s1: T, s2: T) -> T {
-//     if s1.len() >= s2.len() {
-//          s1
-//     } else {
-//          s2
-//     }
-// }
-
 fn ex_lifetime_1() {
     let s1: &str = "xpto__";
     let s2: &str = "xpto___";
 
     println!("xpto_a = {}", s1.len());
     println!("xpto_b = {}", s2.len());
-
-    // println!("longest = {}", longest(*s1, *s2));
-
-    // let string1 = String::from("abcd");
-    // let string2 = "xyz";
-
-    // let result = longest(string1.as_str(), string2);
-    // println!("The longest string is {}", result);
 }
