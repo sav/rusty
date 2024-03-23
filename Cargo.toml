@@ -12,6 +12,10 @@ homepage = "http://loophole.cc/sav/rusty.git"
 keywords = ["learning", "snippets", "random"]
 publish = false
 
+[lib]
+name = "minigrep"
+path = "src/lib/minigrep.rs"
+
 [profile.release]
 ## abort on panic instead of unwinding the stack.
 panic = 'abort'
