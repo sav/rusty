@@ -1,72 +1,56 @@
 Rusty v0.1.4
 ============
 
-Some Rust snippets I wrote to learn the language and eventually to serve as
-a reminder for the future me. All the following code was either copied from
-or inspired in this great book:
+This repository contains a collection of **Rust code snippets** inspired by **The Rust Programming Language** book. The primary purpose of this repository is to serve as a **personal reference** for myself, helping me remember important concepts and techniques. The code might be a bit messy, and you'll eventually find some commented-out sections that serve as a reminder of how **not** to do things. But fear not! It could still be helpful for you to take a look at it, specially if you are short on time and won't go through the entire book
+yourself.
 
  * [The "Rust programming language" Book](https://doc.rust-lang.org/book)
 
  Also, there's a new version of the book with interactive quizzes available [here](https://rust-book.cs.brown.edu/).
 
+What's Inside?
+--------------
 
-Usage
------
+- **Snippets**: You'll discover concise code snippets that demonstrate specific Rust features, syntax, or idioms.
+- **Examples**: Small, self-contained programs that showcase how to solve common problems using Rust.
+- **Comments**: Some sections may have comments explaining why certain approaches were chosen or why specific code blocks exist.
 
+Building
+--------
+
+``` sh
+cargo build
+cargo build --examples
 ```
-cargo run --release
+
+Running
+-------
+
+``` sh
+cargo run --bin
+cargo run --bin rusty
+cargo run --bin minigrep
+```
+
+Testing
+-------
+
+``` sh
+cargo test
 ```
 
 Examples
 --------
 
-```
+``` sh
+cargo run --example
 cargo run --example <example>
 ```
-
-To see which examples are available list the contents of `example` directory.
 
 Development
 -----------
 
-To check the package:
-
-```
+``` sh
 cargo check
-```
-
-To run clippy (rust lint):
-
-```
 cargo clippy
-```
-
-Fix the warnings:
-
-```
-cargo clippy --fix
-```
-
-A more advanced (and real case scenario) of Clippy use:
-
-```
-cargo clippy --all-targets --all-features -- -D warnings
-```
-
-To build in development mode:
-
-```
-cargo build
-```
-
-To run the test suites:
-
-```
-cargo test
-```
-
-Finally, to view the project dependency tree:
-
-```
-cargo modules generate tree --with-types
 ```
