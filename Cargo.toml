@@ -19,9 +19,10 @@ path = "src/lib/minigrep.rs"
 [profile.release]
 ## abort on panic instead of unwinding the stack.
 panic = 'abort'
+opt-level = 3
 
 [profile.dev]
-opt-level = 1
+opt-level = 0
 debug = true
 debug-assertions = true
 

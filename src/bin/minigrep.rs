@@ -1,16 +1,10 @@
+use minigrep;
 use std::env;
 use std::process;
-use minigrep;
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
-
-    // let config = minigrep::Config::build(&args).unwrap_or_else(|err| {
-    //     eprintln!("Problem parsing arguments: {err}");
-    //     process::exit(1);
-    // });
-
-    // pass the iterator instead.
+    // instead of passing a reference to a collection of `String`, move an
+    // `Iterator<Item=String>` with ownership.
     let config = minigrep::Config::build(env::args()).unwrap_or_else(|err| {
         eprintln!("Problem parsing arguments: {err}");
         process::exit(1);

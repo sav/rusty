@@ -1,3 +1,17 @@
+//! The `minigrep` crate provides a simple command-line utility for searching text files.
+//!
+//! # Examples
+//!
+//! ```rust
+//! use std::env;
+//!
+//! minigrep::run(minigrep::Config {
+//!     query: "user".to_string(),
+//!     file_path: "/etc/passwd".to_string(),
+//!     ignore_case: true
+//! });
+//! ```
+
 use std::env;
 use std::error::Error;
 use std::fs;
@@ -29,18 +43,47 @@ impl Config {
         })
     }
 
-    // With our knowledge about iterators, we can change the build function
-    // to take ownership of an iterator as its argument instead of borrowing a
-    // slice. We’ll use the iterator functionality instead of the code that checks
-    // the length of the slice and indexes into specific locations. This will
-    // clarify what the `Config::build` function is doing because the iterator will
-    // access the values.
-    //
-    // Once `Config::build` takes ownership of the iterator and stops using indexing
-    // operations that borrow, we can move the String values from the iterator into
-    // `Config` rather than calling clone and making a new allocation.
+    /// The `Config::build` method constructs a `Config` from an `Iterator<Item = String>`
+    /// of arguments.
+    ///
+    /// # Parameters
+    ///
+    /// - `args`: An iterator over `String` arguments, usually obtained from `env::args()`.
+    ///
+    /// # Returns
+    ///
+    /// A `Result<Config, &'static str>` containing either a valid `Config` struct or an
+    /// error message (`&'static str`).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    ///     use std::env;
+    ///     use std::process;
+    ///     use minigrep;
+    ///
+    ///     match minigrep::Config::build(env::args()) {
+    ///        Ok(config) => {
+    ///            minigrep::run(config);
+    ///        }
+    ///        Err(err) => {
+    ///            eprintln!("Invalid argument: {err}");
+    ///        }
+    ///     }
+    /// ```
 
     pub fn build(mut args: impl Iterator<Item = String>) -> Result<Config, &'static str> {
+        // With our knowledge about iterators, we can change the build function
+        // to take ownership of an iterator as its argument instead of borrowing a
+        // slice. We’ll use the iterator functionality instead of the code that checks
+        // the length of the slice and indexes into specific locations. This will
+        // clarify what the `Config::build` function is doing because the iterator will
+        // access the values.
+        //
+        // Once `Config::build` takes ownership of the iterator and stops using indexing
+        // operations that borrow, we can move the String values from the iterator into
+        // `Config` rather than calling clone and making a new allocation.
+
         args.next(); // ignore args[0]
 
         let query = match args.next() {
@@ -92,11 +135,15 @@ pub fn search_v0<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
     results
 }
 
+/// Performs a case-sensitive search for the specified query in the given file.
+
 pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
     // making the code cleaner using iterator adaptors...
-    contents.lines().filter(|line| line.contains(query)).collect()
+    contents
+        .lines()
+        .filter(|line| line.contains(query))
+        .collect()
 }
-
 
 // case insensitive search.
 pub fn isearch_v0<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
@@ -112,10 +159,15 @@ pub fn isearch_v0<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
     results
 }
 
+/// Performs a case-insensitive search for the specified query in the given file.
+
 pub fn isearch<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
     let query = query.to_lowercase();
     // making the code cleaner using iterator adaptors...
-    contents.lines().filter(|line| line.to_lowercase().contains(&query)).collect()
+    contents
+        .lines()
+        .filter(|line| line.to_lowercase().contains(&query))
+        .collect()
 }
 
 // In case you're wondering how the two implementations compare performance-wise,
