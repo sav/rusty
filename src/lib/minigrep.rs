@@ -9,7 +9,7 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn build(args: &[String]) -> Result<Config, &'static str> {
+    pub fn build_v0(args: &[String]) -> Result<Config, &'static str> {
         if args.len() < 3 {
             return Err("not enough arguments");
         }
@@ -20,6 +20,39 @@ impl Config {
         // progress.
         let query = args[1].clone();
         let file_path = args[2].clone();
+        let ignore_case = env::var("IGNORE_CASE").is_ok();
+
+        Ok(Config {
+            query,
+            file_path,
+            ignore_case,
+        })
+    }
+
+    // With our knowledge about iterators, we can change the build function
+    // to take ownership of an iterator as its argument instead of borrowing a
+    // slice. We’ll use the iterator functionality instead of the code that checks
+    // the length of the slice and indexes into specific locations. This will
+    // clarify what the `Config::build` function is doing because the iterator will
+    // access the values.
+    //
+    // Once `Config::build` takes ownership of the iterator and stops using indexing
+    // operations that borrow, we can move the String values from the iterator into
+    // `Config` rather than calling clone and making a new allocation.
+
+    pub fn build(mut args: impl Iterator<Item = String>) -> Result<Config, &'static str> {
+        args.next(); // ignore args[0]
+
+        let query = match args.next() {
+            Some(arg) => arg,
+            None => return Err("Didn't get a query string."),
+        };
+
+        let file_path = match args.next() {
+            Some(arg) => arg,
+            None => return Err("Didn't get a file path"),
+        };
+
         let ignore_case = env::var("IGNORE_CASE").is_ok();
 
         Ok(Config {
@@ -47,7 +80,7 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
 }
 
 // case sensitive search.
-pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
+pub fn search_v0<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
     let mut results = Vec::new();
 
     for line in contents.lines() {
@@ -59,8 +92,14 @@ pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
     results
 }
 
+pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
+    // making the code cleaner using iterator adaptors...
+    contents.lines().filter(|line| line.contains(query)).collect()
+}
+
+
 // case insensitive search.
-pub fn isearch<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
+pub fn isearch_v0<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
     let query = query.to_lowercase();
     let mut results = Vec::new();
 
@@ -72,6 +111,31 @@ pub fn isearch<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
 
     results
 }
+
+pub fn isearch<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
+    let query = query.to_lowercase();
+    // making the code cleaner using iterator adaptors...
+    contents.lines().filter(|line| line.to_lowercase().contains(&query)).collect()
+}
+
+// In case you're wondering how the two implementations compare performance-wise,
+// using iterators is slightly faster:
+//
+// test bench_search_v0  ... bench:  19,620,300 ns/iter (+/- 915,700)
+// test bench_search     ... bench:  19,234,900 ns/iter (+/- 657,200)
+//
+// Iterators are one of Rust's zero-cost abstractions, by which we mean using
+// the abstraction imposes no additional runtime overhead. This is analogous to
+// how Bjarne Stroustrup, the original designer and implementor of C++, defines
+// zero-overhead in “Foundations of C++” (2012):
+//
+//     "In general, C++ implementations obey the zero-overhead principle:
+//     What you don’t use, you don’t pay for. And further: What you do use,
+//     you couldn’t hand code any better."
+//
+// The implementations of closures and iterators are such that runtime performance
+// is not affected. This is part of Rust’s goal to strive to provide zero-cost
+// abstractions.
 
 #[cfg(test)]
 mod tests {

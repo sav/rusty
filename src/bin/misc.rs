@@ -1372,30 +1372,6 @@ fn lifetime3() {
     i.announce_and_return_part(&novel);
 }
 
-fn longest_with_an_announcement<'a, T>(x: &'a str, y: &'a str, ann: T) -> &'a str
-where
-    T: Display,
-{
-    println!("Announcement! {}", ann);
-    if x.len() > y.len() {
-        x
-    } else {
-        y
-    }
-}
-
-fn lifetime4() {
-    let s: &'static str = "I have a static lifetime.";
-    println!("{:p}: {}", s, s);
-
-    let string1 = String::from("abcd");
-    let string2 = "xyz";
-
-    let result =
-        longest_with_an_announcement(string1.as_str(), string2, "Today is someone's birthday!");
-    println!("The longest string is {}", result);
-}
-
 // The compiler uses three rules to figure out the lifetimes of the references when there
 // aren’t explicit annotations. The first rule applies to input lifetimes, and the second
 // and third rules apply to output lifetimes.
@@ -1425,6 +1401,508 @@ fn lifetime4() {
 
 // For further information on lifetime check out the "lifetime elision rules", or start here:
 // https://rust-book.cs.brown.edu/ch10-03-lifetime-syntax.html#lifetime-elision
+
+fn longest_with_an_announcement<'a, T>(x: &'a str, y: &'a str, ann: T) -> &'a str
+where
+    T: Display,
+{
+    println!("Announcement! {}", ann);
+    if x.len() > y.len() {
+        x
+    } else {
+        y
+    }
+}
+
+fn lifetime4() {
+    let s: &'static str = "I have a static lifetime.";
+    println!("{:p}: {}", s, s);
+
+    let string1 = String::from("abcd");
+    let string2 = "xyz";
+
+    let result =
+        longest_with_an_announcement(string1.as_str(), string2, "Today is someone's birthday!");
+    println!("The longest string is {}", result);
+}
+
+use std::thread;
+use std::time::Duration;
+
+fn closure1() {
+    let expensive_closure = |num: u32| -> u32 {
+        println!("calculating slowly...");
+        thread::sleep(Duration::from_millis(250));
+        num
+    };
+    println!("{}", expensive_closure(100));
+}
+
+fn closure2() {
+    fn add_one_v1(x: u32) -> u32 {
+        x + 1
+    }
+    let add_one_v2 = |x: u32| -> u32 { x + 1 };
+    let add_one_v3 = |x| x + 1;
+    let add_one_v4 = |x| x + 1;
+
+    // The add_one_v3 and add_one_v4 lines require the closures to be
+    // evaluated to be able to compile because the types will be inferred
+    // from their usage.
+
+    println!("{}", add_one_v1(0));
+    println!("{}", add_one_v2(1));
+    println!("{}", add_one_v3(2));
+    println!("{}", add_one_v4(3));
+}
+
+fn closure3() {
+    let f = |_| {};
+    let s = String::from("hello");
+    f(s); // a "toilet closure", similar to std::mem::drop, moves an
+          // argument and causees it to be dropped.
+    println!("s was dropped and is thus unusable.");
+}
+
+// Closures can capture values from their environment in three ways, which
+// directly map to the three ways a function can take a parameter: borrowing
+// immutably, borrowing mutably, and taking ownership. The closure will decide
+// which of these to use based on what the body of the function does with the
+// captured values.
+
+fn closure4() {
+    // borrowing immutably
+    let list = vec![1, 2, 3];
+    println!("Before defining closure: {:?}", list);
+
+    let only_borrows = || println!("From closure: {:?}", list);
+
+    println!("Before calling closure: {:?}", list);
+    only_borrows();
+    println!("After calling closure: {:?}", list);
+}
+
+fn closure5() {
+    // borrowing mutably
+    let mut list = vec![1, 2, 3];
+    println!("Before defining closure: {:?}", list);
+
+    let mut borrows_mutably = || list.push(7);
+
+    // notice that println! is omitted here.
+    borrows_mutably();
+    println!("After calling closure: {:?}", list);
+}
+
+fn closure6() {
+    // taking ownership
+    let list = vec![1, 2, 3];
+    println!("Before defining closure: {:?}", list);
+
+    // we use the keyword `move` here to force the closure to take
+    // ownership of the values it uses in the environment. notice
+    // it will do so even though the body of the closure doesn't
+    // strictly need owership.
+
+    // This technique is mostly useful when passing a closure to a
+    // new thread to move the data so that it’s owned by the new
+    // thread.
+
+    thread::spawn(move || println!("From thread: {:?}", list))
+        .join()
+        .unwrap();
+}
+
+// A closure body can do any of the following: move a captured
+// value out of the closure, mutate the captured value, neither
+// move nor mutate the value, or capture nothing from the
+// environment to begin with.
+
+// The way a closure captures and handles values from the environment
+// affects which traits the closure implements, and traits are how
+// functions and structs can specify what kinds of closures they can use.
+//
+// Closures will automatically implement one, two, or all three of
+// these Fn traits, in an additive fashion, depending on how the
+// closure’s body handles the values:
+//
+//   - `FnOnce` applies to a closure that can be called once. All
+//     closures implement at least this trait, because all closures
+//     can be called. Closures that move captured values out of its body
+//     will only implement `FnOnce` and none of the other Fn traits,
+//     because it can only be called once.
+//
+//   - `FnMut` applies to closures that don't move captured values out of
+//     their body, but that might mutate the captured values. These closures
+//     can be called more than once.
+//
+//   - `Fn` applies to closures that don't move captured values out of
+//     their body and that don't mutate captured values, as well as
+//     closures that capture nothing from their environment. These closures
+//     can be called more than once without mutating their environment,
+//     which is important in cases such as calling a closure multiple times
+//     concurrently.
+
+use std::option::Option;
+
+struct MyOption<T>(Option<T>);
+
+impl<T> MyOption<T> {
+    pub fn unwrap_or_else<F>(self, f: F) -> T
+    where
+        F: FnOnce() -> T, // a function that can be called once, with no
+                          // arguments, and returns a value of type T.
+    {
+        match self {
+            MyOption(Some(x)) => x,
+            MyOption(None) => f(),
+        }
+    }
+}
+
+fn closure7() {
+    let o1 = MyOption(Some(3)).unwrap_or_else(|| 0);
+    let o2 = MyOption(None).unwrap_or_else(|| 0);
+
+    println!("{} {}", o1, o2);
+}
+
+// Now let’s look at the standard library method sort_by_key defined on slices,
+// to see how that differs from unwrap_or_else and why sort_by_key uses FnMut
+// instead of FnOnce for the trait bound.
+
+fn closure8() {
+    let mut list = [
+        Rectangle {
+            width: 10,
+            height: 1,
+        },
+        Rectangle {
+            width: 3,
+            height: 5,
+        },
+        Rectangle {
+            width: 7,
+            height: 12,
+        },
+    ];
+
+    // The closure gets one argument in the form of a reference to the current
+    // item in the slice being considered, and returns a value of type K that
+    // can be ordered:
+    //
+    // pub fn sort_by_key<K, F>(&mut self, mut f: F)
+    // where
+    //     F: FnMut(&T) -> K,
+    //     K: Ord, {...}
+
+    list.sort_by_key(|r| r.width);
+
+    // The reason sort_by_key is defined to take an FnMut closure is that it calls
+    // the closure multiple times: once for each item in the slice. The closure
+    // |r| r.width doesn’t capture, mutate, or move out anything from its environment,
+    // so it meets the trait bound requirements.
+
+    println!("{:?}", list);
+}
+
+// In contrast, the code below (Listing 13-8) shows an example of a closure that
+// implements just the FnOnce trait, because it moves a value out of the environment.
+// The compiler won’t let us use this closure with `sort_by_key`:
+
+fn closure9() {
+    let mut list = [
+        Rectangle {
+            width: 10,
+            height: 1,
+        },
+        Rectangle {
+            width: 3,
+            height: 5,
+        },
+        Rectangle {
+            width: 7,
+            height: 12,
+        },
+    ];
+
+    let mut sort_operations: Vec<Rectangle> = vec![];
+    let value = String::from("by key called");
+
+    list.sort_by_key(|r| {
+        // sort_operations.push(value); // can't do, as it would move the
+        //                              // captured environment `value`
+        //                              // out of the closure, into the vector.
+        sort_operations.push(*r);
+        r.width
+    });
+
+    println!("{:?} {} -> {:?}", list, value, sort_operations);
+}
+
+// Note: Functions can implement all three of the `Fn` traits too.
+// If what we want to do doesn’t require capturing a value from the environment,
+// we can use the name of a function rather than a closure where we need something
+// that implements one of the `Fn` traits. For example, on an `Option<Vec<T>>`
+// value, we could call `unwrap_or_else(Vec::new)` to get a new, empty vector if
+// the value is `None`.
+
+fn closure10() {
+    let v1: Vec<i32> = None.unwrap_or_else(Vec::new);
+    let v2 = Some(vec![1, 2, 3]).unwrap_or_else(Vec::new);
+
+    println!("{:?}", v1);
+    println!("{:?}", v2);
+}
+
+// The code below yields the error: hidden type for `impl Fn() -> String` captures
+// lifetime that does not appear in bounds
+//
+// fn make_a_cloner(s_ref: &str) -> impl Fn() -> String {
+//     move || s_ref.to_string()
+// }
+//
+// What does it mean? What is a hidden type? Why does it capture a lifetime? Why does
+// that lifetime need to appear in a bound?
+//
+// Let's see what would happen if Rust allowed the above code to compile.
+//
+// fn main() {
+//     let s_own = String::from("hello world");
+//     let cloner = make_a_cloner(&s_own);
+//     drop(s_own);
+//     cloner();
+// }
+//
+// It could eventually lead to an undefined behavior, right?
+//
+// We must tell Rust that the closure returned from `make_a_cloner` must not live
+// longer than s_ref. By using a lifetime parameter like this:
+
+fn make_a_cloner_v1<'a>(s_ref: &'a str) -> impl Fn() -> String + 'a {
+    move || s_ref.to_string()
+}
+
+// Note that we can use the lifetime elision rules to make the function type
+// more concise. We can remove the <'a> generic so long as we keep an indicator
+// that the returned closure depends on _some_ lifetime, like this:
+
+fn make_a_cloner_v2(s_ref: &str) -> impl Fn() -> String + '_ {
+    move || s_ref.to_string()
+}
+
+fn closure11() {
+    let s_own = String::from("hello world");
+    let cloner = make_a_cloner_v1(&s_own);
+    // drop(s_own); // cannot move out of `s_own` because it is borrowed.
+    cloner();
+
+    let cloner = make_a_cloner_v2(&s_own);
+    // drop(s_own); // ...
+    cloner();
+}
+
+fn closure12() {
+    let mut s = String::from("hello");
+    // Notice that while the following lines won't compile...
+    // let add_suffix = || s.push_str(" world");
+    // println!("{s}");
+    // add_suffix();
+    // These will:
+    let add_suffix = |s: &mut String| s.push_str(" world");
+    println!("{s}");
+    add_suffix(&mut s);
+}
+
+// Notice that in the case below we only need FnMut, as the value
+// is passed by reference to `f`, thus, not moving any value out
+// of the closure context.
+
+fn for_each_mut<T, F: FnMut(&mut T)>(v: &mut Vec<T>, mut f: F) {
+    for x in v.iter_mut() {
+        f(x);
+    }
+}
+
+fn closure13() {
+    let mut v = vec![1, 2, 3];
+    for_each_mut(&mut v, |x| *x = 0);
+    println!("{:?}", v);
+}
+
+// All iterators implement a trait named Iterator that is defined in the
+// standard library. The definition of the trait looks like this:
+//
+// pub trait Iterator {
+//     type Item;
+//
+//     fn next(&mut self) -> Option<Self::Item>;
+//
+//     // methods with default implementations elided.
+// }
+//
+// Notice this definition uses some new syntax: `type Item` and `Self::Item`
+// which defines an "associated type" with this trait. We'll cover this
+// later, for now all you need to know is that this code says implementing
+// the Iterator trait requires that you also define an `Item` type, and
+// this `Item` type is used in the return type of the `next` method. The
+// `Item` type will be the type returned from the iterator.
+//
+// The `Iterator` trait only requires implementors to define one method: `next`,
+// which returns one item of the iterator at a time wrapped in `Some` and, when
+// iteration is over, returns `None`.
+
+fn iter4() {
+    let v1 = vec![1, 2, 3];
+
+    let mut v1_iter = v1.iter(); // needs to be mutable because calling
+                                 // `next` changes/consumes its state.
+
+    // The values we get from calls to `next` are immutable references.
+    assert_eq!(v1_iter.next(), Some(&1));
+    assert_eq!(v1_iter.next(), Some(&2));
+    assert_eq!(v1_iter.next(), Some(&3));
+    assert_eq!(v1_iter.next(), None);
+
+    // The `iter` method produces an iterator over immutable references. If we want
+    // to create an iterator that takes ownership of `v1` and returns owned values,
+    // we can call `into_iter` instead of iter. Similarly, if we want to iterate
+    // over mutable references, we can call `iter_mut` instead of `iter`.
+}
+
+// `Iterator` has a number of different methods with default implementation
+// that calls `next`. Methods that call `next` are called "consuming adaptors",
+// because calling them uses up the iterator. One example is the `sum` method,
+// which takes ownership of the iterator and iterates through the items by
+// repeatedly calling `next`, thus consuming the iterator.
+
+fn iter5() {
+    let v1 = vec![1, 2, 3];
+    let v1_iter = v1.iter();
+    let total: i32 = v1_iter.sum();
+    // can't use v1_iter anymore because `sum` took its ownership.
+    assert_eq!(total, 6);
+}
+
+// "Iterator adaptors" are methods defined on the `Iterator` trait that don't
+// consume the iterator. Instead, they produce different iterators by changing
+// some aspect of the original iterator.
+
+fn iter6() {
+    // The "iterator adaptor" `map` takes a closure to call on each item as the items
+    // are iterated through. The `map` method returns a new iterator that produces
+    // the modified items.
+
+    let v1: Vec<i32> = vec![1, 2, 3];
+
+    // The method `map` returns a new iterator and does not consume anything.
+    // The method `collect` consumes the iterator, collecting the resulting values
+    // into a collection data type.
+
+    let v2: Vec<_> = v1.iter().map(|x| x + 1).collect();
+
+    println!("{:?} -> {:?}", v1, v2);
+}
+
+fn greater_than_area(v: Vec<Rectangle>, area: u32) -> Vec<Rectangle> {
+    v.into_iter()
+        .filter(|s| s.width * s.height > area)
+        .collect()
+}
+
+fn iter7() {
+    let rectangles = vec![
+        Rectangle {
+            height: 1,
+            width: 1,
+        },
+        Rectangle {
+            height: 2,
+            width: 2,
+        },
+        Rectangle {
+            height: 3,
+            width: 3,
+        },
+        Rectangle {
+            height: 4,
+            width: 4,
+        },
+    ];
+    println!("{:?}", greater_than_area(rectangles, 4));
+    // rectangles is unusable here.
+}
+
+fn iter8() {
+    let v = vec![1, 2, 3];
+
+    // the following two snippets are semantically equivalent.
+
+    let mut iter = v.iter();
+    while let Some(x) = iter.next() {
+        println!("{}", x);
+    }
+
+    let iter = v.iter();
+    for x in iter {
+        println!("{}", x);
+    }
+}
+
+fn iter9() {
+    let v = vec![1, 2, 3, 4];
+
+    let a: Vec<_> = v
+        .iter()
+        .filter(|x: &&i32| *x % 2 == 0)
+        .map(|x: &i32| x * 2)
+        .collect();
+
+    let b: Vec<_> = v
+        .iter()
+        .map(|x: &i32| x * 2)
+        .filter(|x: &i32| x % 2 == 0)
+        .collect();
+
+    println!("{:?} {:?}", a, b);
+}
+
+fn iter10() {
+    let mut data = [1; 1000];
+    let buffer: &mut [i32] = &mut data;
+    let coefficients: [i64; 12] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+    let qlp_shift: i16 = 8i16;
+
+    // What assembly code would this Rust code compile to? Well, as of this writing,
+    // it compiles down to the same assembly you’d write by hand. There’s no loop at
+    // all corresponding to the iteration over the values in coefficients: Rust knows
+    // that there are 12 iterations, so it “unrolls” the loop. Unrolling is an
+    // optimization that removes the overhead of the loop controlling code and instead
+    // generates repetitive code for each iteration of the loop.
+
+    // All of the coefficients get stored in registers, which means accessing the values
+    // is very fast. There are no bounds checks on the array access at runtime. All these
+    // optimizations that Rust is able to apply make the resulting code extremely efficient.
+    // Now that you know this, you can use iterators and closures without fear! They make
+    // code seem like it’s higher level but don’t impose a runtime performance penalty for
+    // doing so.
+
+    // Closures and iterators are Rust features inspired by functional programming language
+    // ideas. They contribute to Rust’s capability to clearly express high-level ideas at
+    // low-level performance. The implementations of closures and iterators are such that
+    // runtime performance is not affected. This is part of Rust’s goal to strive to provide
+    // zero-cost abstractions.
+
+    for i in 12..buffer.len() {
+        let prediction = coefficients.iter()
+            .zip(&buffer[i - 12..i])
+            .map(|(&c, &s)| c * s as i64)
+            .sum::<i64>() >> qlp_shift;
+        let delta = buffer[i];
+        buffer[i] = prediction as i32 + delta;
+    }
+    println!("prediction = {:?}", &buffer[0..16]);
+}
 
 fn main() {
     println!("-=- tuple() -=-");
@@ -1633,4 +2111,64 @@ fn main() {
 
     println!("-=- lifetime4() -=-");
     lifetime4();
+
+    println!("-=- closure1() -=-");
+    closure1();
+
+    println!("-=- closure2() -=-");
+    closure2();
+
+    println!("-=- closure3() -=-");
+    closure3();
+
+    println!("-=- closure4() -=-");
+    closure4();
+
+    println!("-=- closure5() -=-");
+    closure5();
+
+    println!("-=- closure6() -=-");
+    closure6();
+
+    println!("-=- closure7() -=-");
+    closure7();
+
+    println!("-=- closure8() -=-");
+    closure8();
+
+    println!("-=- closure9() -=-");
+    closure9();
+
+    println!("-=- closure10() -=-");
+    closure10();
+
+    println!("-=- closure11() -=-");
+    closure11();
+
+    println!("-=- closure12() -=-");
+    closure12();
+
+    println!("-=- closure13() -=-");
+    closure13();
+
+    println!("-=- iter4() -=-");
+    iter4();
+
+    println!("-=- iter5() -=-");
+    iter5();
+
+    println!("-=- iter6() -=-");
+    iter6();
+
+    println!("-=- iter7() -=-");
+    iter7();
+
+    println!("-=- iter8() -=-");
+    iter8();
+
+    println!("-=- iter9() -=-");
+    iter9();
+
+    println!("-=- iter10() -=-");
+    iter10();
 }
