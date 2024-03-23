@@ -1,14 +1,14 @@
-## Cargo.toml, Jul/2022, Savio S Machado <sav@loophole.cc>
+## Cargo.toml, Jul/2022, Savio Sena <savio.sena@gmail.com>
 
 [package]
 name = "rusty"
-version = "0.1.3"
+version = "0.1.4"
 edition = "2021"
-description = "Random snippets written while reading the Rust Programming Language book."
-repository = "git@gitlab.com:savio.sena/rusty.git"
+description = "A collection of code snippets and examples inspired by the Rust Programming Language book."
+repository = "git@github.com:sav/rusty.git"
 license = "MIT"
 readme = "README.md"
-homepage = "http://loophole.cc/sav/rusty.git"
+homepage = "https://github.com/sav/rusty"
 keywords = ["learning", "snippets", "random"]
 publish = false
 
