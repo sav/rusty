@@ -706,6 +706,14 @@ fn ex_enum_2() {
     println!(">> loopback = {:?}", loopback);
 }
 
+/// To determine how much space to allocate for a Message value, Rust goes
+/// through each of the variants to see which variant needs the most space.
+///
+/// Rust sees that `Message::Quit` doesn’t need any space, `Message::Move` needs
+/// enough space to store two `i32` values, and so forth. Because only one variant
+/// will be used, the most space a `Message` value will need is the space it
+/// would take to store the largest of its variants.
+
 #[derive(Debug)]
 enum Message {
     _Quit,

@@ -1867,41 +1867,753 @@ fn iter9() {
     println!("{:?} {:?}", a, b);
 }
 
+/// What assembly code would this Rust code compile to? Well, as of this writing,
+/// it compiles down to the same assembly you’d write by hand. There’s no loop at
+/// all corresponding to the iteration over the values in coefficients: Rust knows
+/// that there are 12 iterations, so it “unrolls” the loop. Unrolling is an
+/// optimization that removes the overhead of the loop controlling code and instead
+/// generates repetitive code for each iteration of the loop.
+///
+/// All of the coefficients get stored in registers, which means accessing the values
+/// is very fast. There are no bounds checks on the array access at runtime. All these
+/// optimizations that Rust is able to apply make the resulting code extremely efficient.
+/// Now that you know this, you can use iterators and closures without fear! They make
+/// code seem like it’s higher level but don’t impose a runtime performance penalty for
+/// doing so.
+///
+/// Closures and iterators are Rust features inspired by functional programming language
+/// ideas. They contribute to Rust’s capability to clearly express high-level ideas at
+/// low-level performance. The implementations of closures and iterators are such that
+/// runtime performance is not affected. This is part of Rust’s goal to strive to provide
+/// zero-cost abstractions.
+
 fn iter10() {
     let mut data = [1; 1000];
     let buffer: &mut [i32] = &mut data;
     let coefficients: [i64; 12] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
     let qlp_shift: i16 = 8i16;
 
-    // What assembly code would this Rust code compile to? Well, as of this writing,
-    // it compiles down to the same assembly you’d write by hand. There’s no loop at
-    // all corresponding to the iteration over the values in coefficients: Rust knows
-    // that there are 12 iterations, so it “unrolls” the loop. Unrolling is an
-    // optimization that removes the overhead of the loop controlling code and instead
-    // generates repetitive code for each iteration of the loop.
-
-    // All of the coefficients get stored in registers, which means accessing the values
-    // is very fast. There are no bounds checks on the array access at runtime. All these
-    // optimizations that Rust is able to apply make the resulting code extremely efficient.
-    // Now that you know this, you can use iterators and closures without fear! They make
-    // code seem like it’s higher level but don’t impose a runtime performance penalty for
-    // doing so.
-
-    // Closures and iterators are Rust features inspired by functional programming language
-    // ideas. They contribute to Rust’s capability to clearly express high-level ideas at
-    // low-level performance. The implementations of closures and iterators are such that
-    // runtime performance is not affected. This is part of Rust’s goal to strive to provide
-    // zero-cost abstractions.
-
     for i in 12..buffer.len() {
-        let prediction = coefficients.iter()
+        let prediction = coefficients
+            .iter()
             .zip(&buffer[i - 12..i])
             .map(|(&c, &s)| c * s as i64)
-            .sum::<i64>() >> qlp_shift;
+            .sum::<i64>()
+            >> qlp_shift;
         let delta = buffer[i];
         buffer[i] = prediction as i32 + delta;
     }
     println!("prediction = {:?}", &buffer[0..16]);
+}
+
+/// Smart pointers implement the `Deref` and `Drop` traits. The `Deref` trait allows an instance
+/// to behave like a reference so you can write your code to work with either references or
+/// smart pointers. The `Drop` trait allows you to customize the code that's run when an instance
+/// goes out of scope.
+///
+/// The most common smart pointers in the standard library:
+///   - `Box<T>`: for allocating values on the heap.
+///   - `Rc<T>`: a reference counting type that enables multiple ownership.
+///   - `Ref<T>` and `RefMut<T>`: accessed through `RefCell<T>`, a type that enforces the borrowing
+///     rules at runtime instead of compile time.
+///
+/// In addition, we’ll cover the **interior mutability pattern** where an immutable type exposes an
+/// API for mutating an interior value. We’ll also discuss reference cycles: how they can leak
+/// memory and how to prevent them.
+///
+/// Boxes don’t have performance overhead, other than storing their data on the heap instead of on
+/// the stack. But they don’t have many extra capabilities either. You’ll use them most often in
+/// these situations:
+///
+///   - When you have a type whose size can’t be known at compile time and you want to use a value
+///     of that type in a context that requires an exact size. For example, with values of
+///     **recursive types**.
+///   - When you have a large amount of data and you want to transfer ownership but ensure the data
+///     won’t be copied when you do so.
+///   - When you want to own a value and you care only that it’s a type that implements a particular
+///     trait rather than being of a specific type. This case is known as **trait object**.
+
+fn smartptr1() {
+    let b = Box::new(5);
+    println!("b = {}", b);
+
+    let mut n = 1;
+    let p = Box::new(&mut n);
+    **p += 1;
+    println!("n = {}", n);
+}
+
+/// First attempt at defining an enum to represent a cons list data structure of `i32` values:
+///
+/// ```no_run
+/// enum List {
+///     Cons(i32, List),
+///     Nil,
+/// }
+/// ```
+///
+/// Fails to compile with the error: **recursive type has infinite size**. Inserting an indirection,
+/// like `Box`, `Rc` or `&` enables proper compilation. (see `List` definition).
+///
+/// The `Cons` variant needs the size of an `i32` plus the space to store the box’s pointer data.
+/// The `Nil` variant stores no values, so it needs less space than the `Cons` variant. We now
+/// know that any `List` value will take up the size of an `i32` plus the size of a box’s pointer data.
+///
+/// In a 64-bit architecture, if we consider `Box<T>`, it will occupy 4 bytes, equating to the size of a
+/// pointer on such systems.
+///
+/// The `Box<T>` type is a smart pointer because it implements the `Deref` trait, which allows `Box<T>`
+/// values to be treated like references. When a `Box<T>` value goes out of scope, the heap data that
+/// the box is pointing to is cleaned up as well because of the `Drop` trait implementation.
+
+#[derive(Debug)]
+enum List1 {
+    Cons1(i32, Box<List1>),
+    Nil1,
+}
+
+use crate::List1::{Cons1, Nil1};
+
+fn smartptr2() {
+    let mut list = Cons1(1, Box::new(Cons1(2, Box::new(Cons1(3, Box::new(Nil1))))));
+    println!("{:?}", list);
+
+    let a = Cons1(1, Box::new(Nil1));
+    println!("{:?}", a);
+
+    match a {
+        Cons1(value, _) => {
+            println!("value = {}", value);
+        }
+        _ => {
+            println!("not a cons1 value.");
+        }
+    }
+
+    if let Cons1(value, _) = a {
+        println!("The value is: {}", value);
+    }
+
+    println!("iterating through list incremeting the values...");
+
+    let mut current = &mut list;
+    while let Cons1(value, next) = current {
+        println!("value = {}", value);
+        *value += 1;
+        current = next;
+    }
+
+    println!("");
+}
+
+/// Implementing the `Deref` trait allows you to customize the behavior of the dereference operator `*`.
+/// We’ll explore how implementing the Deref trait makes it possible for smart pointers to work in ways
+/// similar to references. Then we’ll look at Rust’s deref coercion feature and how it lets us work with
+/// either references or smart pointers.
+///
+/// Without the Deref trait, the compiler can only dereference & references.
+///
+/// Note: there’s one big difference between the `MyBox<T>` type we’re about to build and the real `Box<T>`:
+/// our version will not store its data on the heap. We are focusing this example on `Deref`, so where the
+/// data is actually stored is less important than the pointer-like behavior.
+
+struct MyBox<T>(T);
+
+impl<T> MyBox<T> {
+    fn new(x: T) -> MyBox<T> {
+        MyBox(x)
+    }
+}
+
+use std::ops::Deref;
+
+impl<T> Deref for MyBox<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl<T> DerefMut for MyBox<T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+fn smartptr3() {
+    let x = 5;
+    let y = MyBox::new(x);
+    let mut z = MyBox::new(x);
+
+    assert_eq!(5, x);
+    assert_eq!(5, *y); // Behind the scenes, Rust actually runs `*(y.deref())`.
+    assert_eq!(5, *z);
+
+    *z = 0;
+
+    println!("{} {} {}", x, *y, *z);
+}
+
+/// **Deref coercion** converts a reference to a type that implements the `Deref`
+/// trait into a reference to another type. For example, `&String` to `&str`
+/// because `String` implements `Deref` such that it returns `&str`.
+///
+/// Deref coercion is a convenience Rust performs on arguments to functions and
+/// methods, and works only on types that implement the `Deref` trait.
+///
+/// Deref coercion was added to Rust so that programmers writing function and
+/// method calls don’t need to add as many explicit references and dereferences
+/// with `&` and `*`.
+///
+/// Rust does deref coercion when it finds types and trait implementations in
+/// three cases:
+///
+///   - From `&T` to `&U` when `T: Deref<Target=U>`.
+///   - From `&mut T` to `&mut U` when `T: DerefMut<Target=U>`.
+///   - From `&mut T` to `&U` when `T: Deref<Target=U>`.
+///
+/// The third case is tricky: Rust will also coerce a mutable reference to an
+/// immutable one. But the reverse is (naturally) not possible.
+///
+/// The following example shows deref coercion in action.
+
+fn smartptr4() {
+    fn hello(name: &str) {
+        println!("Hello, {name}!");
+    }
+    hello("Rust");
+
+    // Because we implemented the `Deref` trait on `MyBox<T>`, Rust can turn
+    // `&MyBox<String>` into `&String` by calling deref. The standard library
+    // provides an implementation of `Deref` on `String` that returns a string
+    // slice, and this is in the API documentation for `Deref`. Rust calls deref
+    // again to turn the `&String` into `&str`, which matches the hello function’s
+    // definition.
+    let m = MyBox::new(String::from("Alekhine"));
+    hello(&m);
+
+    // If Rust didn't implement deref coercion we would have to write:
+    hello(&(*m)[..]);
+}
+
+#[derive(Clone, Copy)]
+struct A(i32);
+
+impl Deref for A {
+    type Target = i32;
+    fn deref(&self) -> &Self::Target {
+        println!("deref: {}", self.0);
+        &self.0
+    }
+}
+
+fn smartptr5() {
+    let n = A(-1);
+    // prints "deref: -1"
+    let x = *n + 1;
+    println!("{} {}", x, *n); // prints "deref: -1"
+}
+
+struct CustomSmartPointer {
+    data: String,
+}
+
+impl Drop for CustomSmartPointer {
+    fn drop(&mut self) {
+        println!("Dropping CustomSmartPointer with data '{}'!", self.data);
+    }
+}
+
+fn smartptr6() {
+    let _a = CustomSmartPointer {
+        data: String::from("hello"),
+    };
+    let _b = CustomSmartPointer {
+        data: String::from("world"),
+    };
+    println!("CustomSmartPointers created.");
+}
+
+fn smartptr7() {
+    let a = CustomSmartPointer {
+        data: String::from("hello"),
+    };
+    println!("CustomSmartPointer created.");
+    // you can't call a.drop() directly. instead, you can do:
+    drop(a);
+    println!("CustomSmartPointer dropped.");
+}
+
+struct Example(i32);
+
+impl Drop for Example {
+    fn drop(&mut self) {
+        self.0 += 1;
+        println!("drop {}", self.0);
+    }
+}
+
+fn smartptr8() {
+    let e = Example(0);
+    drop(e);
+    // drop(e); // can't do, as `e` was moved.
+
+    // other ways to drop `e`:
+
+    let e = Example(0);
+    (|_| ())(e);
+
+    let e = Example(0);
+    {
+        e
+    };
+}
+
+/// In the majority of cases you know exactly which variables owns a given value.
+/// However, there are cases when a single value might have multiple owners. In
+/// this case you may use `Rc<T>`.
+
+#[derive(Debug)]
+enum List2 {
+    Cons2(i32, Rc<List2>),
+    Nil2,
+}
+
+use crate::List2::{Cons2, Nil2};
+
+fn smartptr9() {
+    let a = Rc::new(Cons2(5, Rc::new(Cons2(10, Rc::new(Nil2)))));
+    println!(
+        "a.strong_count = {}, a.weak_count = {}",
+        Rc::strong_count(&a),
+        Rc::weak_count(&a)
+    );
+    {
+        let _b = Cons2(3, Rc::clone(&a));
+        println!(
+            "a.strong_count = {}, a.weak_count = {}",
+            Rc::strong_count(&a),
+            Rc::weak_count(&a)
+        );
+        {
+            let _c = Cons2(4, Rc::clone(&a));
+            println!(
+                "a.strong_count = {}, a.weak_count = {}",
+                Rc::strong_count(&a),
+                Rc::weak_count(&a)
+            );
+        }
+        println!(
+            "a.strong_count = {}, a.weak_count = {}",
+            Rc::strong_count(&a),
+            Rc::weak_count(&a)
+        );
+    }
+    println!(
+        "a.strong_count = {}, a.weak_count = {}",
+        Rc::strong_count(&a),
+        Rc::weak_count(&a)
+    );
+}
+
+struct SmartPtr10;
+impl Drop for SmartPtr10 {
+    fn drop(&mut self) {
+        println!("drop");
+    }
+}
+
+fn smartptr10() {
+    let x = Rc::new(SmartPtr10);
+    let y = Rc::clone(&x);
+    println!("A");
+    drop(x); // won't print "drop".
+    println!("B");
+    drop(y); // prints "drop".
+    println!("C");
+}
+
+/// **Interior mutability** is a design pattern in Rust that allows you to
+/// mutate data even when there are immutable references to that data. Normally
+/// this action is disallowed by the borrowing rules. To mutate data, the pattern
+/// uses `unsafe` code inside a data structure to bend Rust's usual rules that
+/// govern mutation and borrwing.
+///
+/// We can use types that use the interior mutability pattern only when we can ensure
+/// that the borrowing rules will be followed at runtime, even though the compiler
+/// can’t guarantee that. The unsafe code involved is then wrapped in a safe API, and
+/// the outer type is still immutable.
+///
+/// Let’s explore this concept by looking at the `RefCell<T>` type that follows the
+/// interior mutability pattern.
+///
+/// Unlike `Rc<T>`, the `RefCell<T>` type represents single ownership over the data
+/// it holds. What makes `RefCell<T>` different from `Box<T>` for example, which
+/// also holds ownership over the data, is that with `RefCell<T>` you can enforce
+/// the borrowing rules in runtime rather than in compile time. If you break the
+/// borrwing rules in runtime your program will panic and exit.
+///
+/// The advantages of checking the borrwing rules at runtime instead of at compile
+/// time is that certain memory-safe scenarios are then allowed.
+///
+/// If Rust accepted an incorrect program, users wouldn’t be able to trust in the
+/// guarantees Rust makes. However, if Rust rejects a correct program, the programmer
+/// will be inconvenienced, but nothing catastrophic can occur.
+///
+/// The `RefCell<T>` type is useful when you’re sure your code follows the borrowing
+/// rules but the compiler is unable to understand and guarantee that.
+///
+/// Similar to `Rc<T>`, `RefCell<T>` is only for use in **single-threaded** scenarios
+/// and will give you a compile-time error if you try using it in a multithreaded context.
+///
+/// Recap of why to choose `Box<T>`, `Rc<T>` or `RefCell<T>`:
+///   - `Rc<T>` enables multiple owners of the same data; `Box<T>` and `RefCell<T>`
+///     have single owners.
+///   - `Box<T>` allows immutable or mutable borrows checked at compile time;
+///     `Rc<T>` allows only immutable borrows checked at compile time; `RefCell<T>`
+///     allows immutable or mutable borrows checked at runtime.
+///   - Because `RefCell<T>` allows mutable borrows checked at runtime, you can
+///     mutate the value inside the `RefCell<T>` even when the `RefCell<T>` is
+///     immutable.
+///
+/// Mutating the value inside an immutable value is the interior mutability pattern.
+/// Let’s look at a situation in which interior mutability is useful and examine how
+/// it’s possible.
+
+pub trait Messenger {
+    fn send(&self, msg: &str);
+}
+
+pub struct LimitTracker<'a, T: Messenger> {
+    messenger: &'a T,
+    value: usize,
+    max: usize,
+}
+
+impl<'a, T> LimitTracker<'a, T>
+where
+    T: Messenger,
+{
+    pub fn new(messenger: &'a T, max: usize) -> LimitTracker<'a, T> {
+        LimitTracker {
+            messenger,
+            value: 0,
+            max,
+        }
+    }
+
+    pub fn set_value(&mut self, value: usize) {
+        self.value = value;
+
+        let percentage_of_max = self.value as f64 / self.max as f64;
+
+        if percentage_of_max >= 1.0 {
+            self.messenger.send("Error: You are over your quota!");
+        } else if percentage_of_max >= 0.9 {
+            self.messenger
+                .send("Warning: You've used up over 90% of your quota.");
+        } else if percentage_of_max >= 0.75 {
+            self.messenger
+                .send("Warning: You've used up over 75% of your quota.");
+        }
+    }
+}
+
+use std::cell::RefCell;
+
+/// Notice that the `Messenger` trait only implements the `send` method, and
+/// we want to test the `set_value` method but it doesn't return anything
+/// for us to make assertions on.
+///
+/// We need a mock object that, instead of sending an email or text message
+/// when we call `send`, will only keep track of the messages it's told to send.
+///
+/// When creating immutable and mutable references, we use use `&` and `&mut` syntax.
+/// With `RefCell<T>` we use the `borrow` and `borrow_mut` respectively. The `borrow`
+/// method returns the smart pointer type `Ref<T>`, and the `borrow_mut` method
+/// returns the smart pointer type `RefMut<T>`.
+///
+/// The `RefCell<T>` keeps track of how many `Ref<T>` and `RefMut<T>` smart pointers
+/// are currently active. Just like the compile-time borrwing rules, `RefCell<T>`
+/// lets us have many immutable borrows or one mutable borrow at any point in time.
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    struct MockMessenger {
+        sent_messages: RefCell<Vec<String>>,
+    }
+
+    impl MockMessenger {
+        fn new() -> MockMessenger {
+            MockMessenger {
+                sent_messages: RefCell::new(vec![]),
+            }
+        }
+    }
+
+    impl Messenger for MockMessenger {
+        /// Originally, we wouldn't be able to change `self.sent_messages` here
+        /// because `send` takes an immutable reference. `RefCell<T>` solves
+        /// this problem.
+        fn send(&self, message: &str) {
+            // self.sent_messages.push(String::from(message));
+            self.sent_messages.borrow_mut().push(String::from(message));
+        }
+    }
+
+    #[test]
+    fn it_sends_an_over_75_percent_warning_message() {
+        let mock_messenger = MockMessenger::new();
+        let mut limit_tracker = LimitTracker::new(&mock_messenger, 100);
+
+        limit_tracker.set_value(80);
+
+        // notice the .borrow() here.
+        assert_eq!(mock_messenger.sent_messages.borrow().len(), 1);
+    }
+}
+
+/// A common way to use `RefCell<T>` is in combination with `Rc<T>`. Recall that `Rc<T>`
+/// lets you have multiple owners of some data, but it only gives immutable access to
+/// that data. If you have an `Rc<T>` that holds a `RefCell<T>`, you can get a value
+/// that can have multiple owners _and_ that you can mutate!
+///
+/// Let's see how we can add `RefCell<T>` to the `Cons` example to gain the ability
+/// to change the values in the lists.
+
+#[derive(Debug)]
+enum List {
+    Cons(Rc<RefCell<i32>>, Rc<List>),
+    Nil,
+}
+
+use crate::List::{Cons, Nil};
+
+/// This technique is pretty neat! By using `RefCell<T>` we have an outwardly immutable
+/// `List` value. But we can use the methods on `RefCell<T>` that provide access to its
+/// **interior mutability** so we can modify our data when we need to.
+///
+/// The runtime checks of the borrwing rules protect us from data races, and it's
+/// sometimes worth trading a bit of speed for this flexibility in our data structures.
+///
+/// Note that `RefCell<T>` **does not work for multithreaded** code! `Mutex<T>` is the
+/// thread-safe version of `RefCell<T>` and we'll discuss it next.
+
+fn smartptr11() {
+    let value = Rc::new(RefCell::new(5));
+
+    let a = Rc::new(Cons(Rc::clone(&value), Rc::new(Nil)));
+    let b = Cons(Rc::new(RefCell::new(3)), Rc::clone(&a));
+    let c = Cons(Rc::new(RefCell::new(4)), Rc::clone(&a));
+
+    println!("a before = {:?}", a);
+
+    *value.borrow_mut() += 10;
+
+    println!("a after = {:?}", a);
+    println!("b after = {:?}", b);
+    println!("c after = {:?}", c);
+}
+
+use std::cell::UnsafeCell;
+
+fn smartptr12() {
+    let mut x: UnsafeCell<i32> = 42.into();
+
+    // Get a compile-time-checked unique reference to `x`.
+    let p_unique: &mut UnsafeCell<i32> = &mut x;
+
+    // With an exclusive reference, we can mutate the contents for free.
+    *p_unique.get_mut() = 0;
+
+    // Or, equivalently:
+    x = UnsafeCell::new(0);
+
+    // When we own the value, we can extract the contents for free.
+    let contents: i32 = x.into_inner();
+
+    assert_eq!(contents, 0);
+
+    println!("{}", contents);
+}
+
+#[derive(Debug)]
+enum List3 {
+    Cons3(i32, RefCell<Rc<List3>>),
+    Nil3,
+}
+
+use crate::List3::{Cons3, Nil3};
+
+impl List3 {
+    fn tail(&self) -> Option<&RefCell<Rc<List3>>> {
+        match self {
+            Cons3(_, item) => Some(item),
+            Nil3 => None,
+        }
+    }
+}
+
+/// ## _Reference cycles_ can **leak memory**.
+///
+/// Rust's memory safey guarantees make it difficult, but not impossible, to accidentally create
+/// _memory leak_.
+///
+/// We can see that Rust allows memory leaks by using `Rc<T>` and `RefCell<T>`: it's possible
+/// to create references where **items refer to each other in a cycle**. This creates memory leaks
+/// because the reference count of each item in the cycle will **never reach 0**, and the values will
+/// **never be dropped**.
+///
+/// At the end of `smartptr13`, Rust drops the variable `b`, which decreases the reference count of
+/// the `b` `Rc<List>` instance from 2 to 1. The memory that `Rc<List>` has on the heap won’t be
+/// dropped at this point, because its reference count is 1, not 0. Then Rust drops `a`, which
+/// decreases the reference count of the `a` `Rc<List>` instance from 2 to 1 as well. This instance’s
+/// memory can’t be dropped either, because the other `Rc<List>` instance still refers to it.
+/// The memory allocated to the list will remain uncollected forever.
+
+fn smartptr13() {
+    let a = Rc::new(Cons3(5, RefCell::new(Rc::new(Nil3))));
+
+    println!("a initial rc count = {}", Rc::strong_count(&a));
+    println!("a item = {:?}", a);
+    println!("a next item = {:?}", a.tail());
+    println!("-=-");
+
+    let b = Rc::new(Cons3(10, RefCell::new(Rc::clone(&a))));
+
+    println!("a rc count after b creation = {}", Rc::strong_count(&a));
+    println!("a item = {:?}", a);
+    println!("b initial rc count = {}", Rc::strong_count(&b));
+    println!("b item = {:?}", b);
+    println!("b next item = {:?}", b.tail());
+    println!("-=-");
+
+    // link the tail of `a` to `b`, making circular references between them.
+    if let Some(link) = a.tail() {
+        *link.borrow_mut() = Rc::clone(&b);
+    }
+
+    // the code below will leak memory!
+    // also: can't print a or b anymore as it infinitely recurses.
+    println!("b rc count after changing a = {}", Rc::strong_count(&b));
+    println!("a rc count after changing a = {}", Rc::strong_count(&a));
+    println!("-=-");
+}
+
+use std::rc::Weak;
+
+/// Make sure to read the problem description on `smartptr14` first.
+///
+/// We want a Node to own its children, and we want to share that ownership
+/// with variables so we can access each `Node` in the tree directly. To do this, we
+/// define the `Vec<T>` items to be values of type `Rc<Node>`. We also want to
+/// modify which nodes are children of another node, so we have a `RefCell<T>`
+/// in children around the `Vec<Rc<Node>>`.
+
+#[derive(Debug)]
+struct Node {
+    value: i32,
+    parent: RefCell<Weak<Node>>,
+    children: RefCell<Vec<Rc<Node>>>,
+}
+
+/// ## Preventing Reference Cycles: Turning an `Rc<T>` into a `Weak<T>`.
+///
+/// You can create _weak references_ to the value within an `Rc<T>` instance by
+/// calling `Rc::downgrade` and passing a reference to the `Rc<T>`. Strong references
+/// are how you can share ownership of an `Rc<T>` instance. Weak references on the
+/// other hand don't express an ownership relationship, and their count doesn't
+/// affect when an `Rc<T>` instance is cleaned up.
+///
+/// Notice weak references won't cause a reference cycle to leak because any cycle
+/// involving some weak references will be broken once the strong reference count
+/// of value  involved is 0.
+///
+/// Because the value that `Weak<T>` references might have been dropped, to do
+/// anything with its value you must make sure the value still exists. Do this by
+/// calling `upgrade` method on a `Weak<T>` instance, which will return a
+/// `Option<Rc<T>>`. You'll get a result of `Some` if the `Rc<T>` value has not
+/// been dropped yet and a result of `None` otherwise.
+///
+/// To illustrate this the following example implements a tree whose items know
+/// about their children items _and_ their parent items.
+
+fn smartptr14() {
+    let leaf = Rc::new(Node {
+        value: 3,
+        parent: RefCell::new(Weak::new()),
+        children: RefCell::new(vec![]),
+    });
+
+    let branch = Rc::new(Node {
+        value: 5,
+        parent: RefCell::new(Weak::new()),
+        children: RefCell::new(vec![Rc::clone(&leaf)]),
+    });
+
+    println!("leaf parent = {:#?}", leaf.parent.borrow().upgrade());
+
+    *leaf.parent.borrow_mut() = Rc::downgrade(&branch);
+
+    println!("leaf parent = {:#?}", leaf.parent.borrow().upgrade());
+}
+
+fn smartptr15() {
+    let leaf = Rc::new(Node {
+        value: 3,
+        parent: RefCell::new(Weak::new()),
+        children: RefCell::new(vec![]),
+    });
+
+    println!(
+        "leaf strong = {}, weak = {}",
+        Rc::strong_count(&leaf),
+        Rc::weak_count(&leaf),
+    );
+
+    {
+        let branch = Rc::new(Node {
+            value: 5,
+            parent: RefCell::new(Weak::new()),
+            children: RefCell::new(vec![Rc::clone(&leaf)]),
+        });
+
+        *leaf.parent.borrow_mut() = Rc::downgrade(&branch);
+
+        println!(
+            "branch strong = {}, weak = {}",
+            Rc::strong_count(&branch),
+            Rc::weak_count(&branch),
+        );
+
+        println!(
+            "leaf strong = {}, weak = {}",
+            Rc::strong_count(&leaf),
+            Rc::weak_count(&leaf),
+        );
+    }
+
+    println!("leaf parent = {:?}", leaf.parent.borrow().upgrade());
+    println!(
+        "leaf strong = {}, weak = {}",
+        Rc::strong_count(&leaf),
+        Rc::weak_count(&leaf),
+    );
+}
+
+fn smartptr16() {
+    let r1 = Rc::new(0);
+    let r4 = {
+        let r2 = Rc::clone(&r1);
+        Rc::downgrade(&r2)
+    };
+    let _r5 = Rc::clone(&r1);
+    let _r6 = r4.upgrade();
+
+    println!("{} {}", Rc::strong_count(&r1), Rc::weak_count(&r1)); // output: 3 1
 }
 
 fn main() {
@@ -2171,4 +2883,52 @@ fn main() {
 
     println!("-=- iter10() -=-");
     iter10();
+
+    println!("-=- smartptr1() -=-");
+    smartptr1();
+
+    println!("-=- smartptr2() -=-");
+    smartptr2();
+
+    println!("-=- smartptr3() -=-");
+    smartptr3();
+
+    println!("-=- smartptr4() -=-");
+    smartptr4();
+
+    println!("-=- smartptr5() -=-");
+    smartptr5();
+
+    println!("-=- smartptr6() -=-");
+    smartptr6();
+
+    println!("-=- smartptr7() -=-");
+    smartptr7();
+
+    println!("-=- smartptr8() -=-");
+    smartptr8();
+
+    println!("-=- smartptr9() -=-");
+    smartptr9();
+
+    println!("-=- smartptr10() -=-");
+    smartptr10();
+
+    println!("-=- smartptr11() -=-");
+    smartptr11();
+
+    println!("-=- smartptr12() -=-");
+    smartptr12();
+
+    println!("-=- smartptr13() -=-");
+    smartptr13();
+
+    println!("-=- smartptr14() -=-");
+    smartptr14();
+
+    println!("-=- smartptr15() -=-");
+    smartptr15();
+
+    println!("-=- smartptr16() -=-");
+    smartptr16();
 }
