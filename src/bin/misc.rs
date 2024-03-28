@@ -2616,6 +2616,373 @@ fn smartptr16() {
     println!("{} {}", Rc::strong_count(&r1), Rc::weak_count(&r1)); // output: 3 1
 }
 
+/// ## Fearless Concurrency
+///
+/// Fearless concurrency allows you to write code that is free of subtle bugs and
+/// is easy to refactor without introducing new bugs.
+///
+/// Since lower-level languages are expected to provide the solution with the best
+/// performance in any given situation and have fewer abstractions over the hardware,
+/// Rust offers a variety of tools for modeling problems in whatever way is appropriate
+/// for your situation and requirements.
+///
+/// Topic we'll cover next:
+///
+///   - How to create threads to run multiple pieces of code at the same time
+///   - Message-passing concurrency, where channels send messages between threads
+///   - Shared-state concurrency, where multiple threads have access to some piece of data
+///   - The `Sync` and `Send` traits, which extend Rust’s concurrency guarantees to user-defined
+///     types as well as types provided by the standard library
+
+fn concurrency1() {
+    let handle = thread::spawn(|| {
+        for i in 1..10 {
+            println!("hi number {} from spawned thread!", i);
+            thread::sleep(Duration::from_millis(1));
+        }
+    });
+
+    for i in 1..5 {
+        println!("hi number {} from the main thread!", i);
+        thread::sleep(Duration::from_millis(1));
+    }
+
+    handle.join().unwrap();
+}
+
+/// ## Using `move` Closures with Threads
+
+fn concurrency2() {
+    let v = vec![1, 2, 3];
+    let handle = thread::spawn(move || {
+        println!("Here's a vector: {v:?}");
+    });
+    handle.join().unwrap();
+
+    // another example:
+
+    let mut n = 1;
+    let t = thread::spawn(move || {
+        println!("type of n = {}", type_of(&n));
+        n = n + 1;
+        thread::spawn(move || {
+            n = n + 1;
+        })
+    });
+    n = n + 1;
+    t.join().unwrap().join().unwrap();
+    println!("n = {n}");
+
+    // another example:
+
+    let mut x = String::from("abc");
+    let t = std::thread::spawn(move || {
+        x = String::from("cde");
+        println!("Inside thread: x = {}", x);
+    });
+    // println!("Outside thread: x = {}", x); // can't do.
+    t.join().unwrap();
+}
+
+use std::sync::mpsc;
+
+/// ## Using Message Passing to Transfer Data Between Threads
+///
+/// _"Do not communicate by sharing memory; instead, share memory by communicating."_
+///   -- _Effective Go_
+///
+/// A channel is said to be closed if either the transmitter or receiver
+/// half is dropped.
+///
+/// The receiver has two useful methods: `recv` and `try_recv`. We’re using `recv`,
+/// short for receive, which will block the main thread’s execution and wait until a
+/// value is sent down the channel.
+
+fn concurrency3() {
+    let (tx, rx) = mpsc::channel(); // mpsc stands for multiple producer, single consumer
+
+    thread::spawn(move || {
+        let val = String::from("hi");
+        tx.send(val).unwrap();
+        // can't use `val` after `send`
+    });
+
+    let received = rx.recv().unwrap();
+    println!("Got: {}", received);
+}
+
+/// ## Channels and Ownership Tranference
+
+fn concurrency4() {
+    let (tx, rx) = mpsc::channel();
+
+    thread::spawn(move || {
+        let vals = vec![
+            String::from("hi"),
+            String::from("from"),
+            String::from("the"),
+            String::from("thread"),
+        ];
+
+        for val in vals {
+            tx.send(val).unwrap();
+            thread::sleep(Duration::from_secs(1));
+        }
+    });
+
+    // Here we’re not calling the recv function explicitly anymore:
+    // instead, we’re treating `rx` as an iterator.
+
+    for received in rx {
+        println!("Got: {}", received);
+    }
+}
+
+/// ## Creating Multiple Producers by Cloning the Transmitter
+///
+/// As mentioned earlier, `mpsc` stands for _multiple producers, single consumer_.
+/// Let's see how to `clone` `tx` to have multiple producers.
+
+fn concurrency5() {
+    let (tx, rx) = mpsc::channel();
+
+    let tx1 = tx.clone();
+    thread::spawn(move || {
+        let vals = vec![
+            String::from("hi"),
+            String::from("from"),
+            String::from("the"),
+            String::from("thread"),
+        ];
+
+        for val in vals {
+            tx1.send(val).unwrap();
+            thread::sleep(Duration::from_secs(1));
+        }
+    });
+
+    thread::spawn(move || {
+        let vals = vec![
+            String::from("more"),
+            String::from("messages"),
+            String::from("for"),
+            String::from("you"),
+        ];
+
+        for val in vals {
+            tx.send(val).unwrap();
+            thread::sleep(Duration::from_secs(1));
+        }
+    });
+
+    for received in rx {
+        println!("Got: {}", received);
+    }
+}
+
+enum ClientMessage {
+    Incr,
+    Get,
+    Quit,
+}
+enum ServerMessage {
+    Get(usize),
+}
+
+fn concurrency6() {
+    let (server_tx, client_rx) = mpsc::channel();
+    let (client_tx, server_rx) = mpsc::channel();
+
+    let server = thread::spawn(move || {
+        let mut n = 0;
+        loop {
+            match server_rx.recv().unwrap() {
+                ClientMessage::Quit => break,
+                ClientMessage::Incr => n += 1,
+                ClientMessage::Get => server_tx.send(ServerMessage::Get(n)).unwrap(),
+            }
+        }
+    });
+
+    for msg in [ClientMessage::Incr, ClientMessage::Get, ClientMessage::Quit] {
+        client_tx.send(msg).unwrap();
+    }
+
+    if let ServerMessage::Get(n) = client_rx.recv().unwrap() {
+        println!("{}", n);
+    }
+
+    server.join().unwrap();
+}
+
+use std::sync::{Arc, Mutex};
+
+/// ## Shared-State Concurrency
+///
+/// In a way, channels in any programming language are similar to _single ownership_, because once
+/// you transfer a value down a channel, you should _no longer use that value_. Shared memory
+/// concurrency is like _multiple ownership_: multiple threads can access the same memory location
+/// _at the same time_.
+///
+/// Let’s look at _mutexes_, one of the more common concurrency primitives for shared memory.
+///
+/// Mutexes have a reputation for being difficult to use because you have to remember two rules:
+///   - You must attempt to acquire the lock before using the data.
+///   - When you’re done with the data that the mutex guards, you must unlock the data
+///     so other threads can acquire the lock.
+///
+/// Management of mutexes can be _incredibly tricky to get right_, which is why so many people
+/// are enthusiastic about channels. However, thanks to Rust’s type system and ownership rules,
+/// you can’t get locking and unlocking wrong.
+///
+/// Let’s start by using a mutex in a single-threaded context.
+///
+/// As you might suspect, `Mutex<T>` is a _smart pointer_. More accurately, the call to `lock`
+/// returns a smart pointer called `MutexGuard`, wrapped in a `LockResult` that we handled with
+/// the call to `unwrap`. The `MutexGuard` smart pointer implements `Deref` to point at our inner
+/// data; the smart pointer also has a `Drop` implementation that **releases the lock automatically**
+/// when a `MutexGuard` goes out of scope, which happens at the end of the inner scope.
+///
+/// The type of `m` is `Mutex<i32>`, not `i32`, so we **must call lock** to be able to use the `i32` value.
+/// We can’t forget; the _type system_ **won’t let us access the inner `i32` otherwise**.
+///
+/// After we’ve acquired the lock, we can treat the return value, named num in this case, as a mutable
+/// reference to the data inside.
+///
+/// After dropping the lock, we can print the mutex value and see that we were able to change the
+/// inner `i32` to `6`.
+///
+/// The call to `lock` would fail if another thread holding the lock panicked. In that case, no one
+/// would ever be able to get the lock, so we’ve chosen to `unwrap` and have this thread panic if we’re
+/// in that situation.
+///
+/// Recall that using `Rc<T>` came with the risk of creating reference cycles, where two `Rc<T>` values
+/// refer to each other, causing memory leaks. Similarly, `Mutex<T>` comes with the risk of creating
+/// **deadlocks**.
+
+fn concurrency7() {
+    let m = Mutex::new(5);
+
+    {
+        let mut num = m.lock().unwrap();
+        *num = 6;
+    }
+
+    println!("m = {:?}", m);
+}
+
+/// ## Sharing a `Mutex<T>` Between Multiple Threads
+///
+/// ### Atomic Reference Counting with `Arc<T>`
+///
+/// In the same way we used `RefCell<T>` to allow us to mutate contents inside an `Rc<T>`, we
+/// use `Mutex<T>` to mutate contents inside an `Arc<T>`.
+///
+/// You may notice that `counter` is immutable but we could get a mutable reference to the value
+/// inside it; this means `Mutex<T>` provides _interior mutability_, as the `Cell` family does.
+///
+/// You might then wonder why all primitive types aren’t atomic and why standard library types
+/// aren’t implemented to use `Arc<T>` by default. The reason is that thread safety comes with
+/// a performance penalty that you only want to pay when you really need to.
+
+fn concurrency8() {
+    // Recall that `Rc<T>` is not _thread-safe_.
+    let counter = Arc::new(Mutex::new(0));
+    let mut handles = vec![];
+
+    for _ in 0..10 {
+        let counter = Arc::clone(&counter);
+        let handle = thread::spawn(move || {
+            let mut num = counter.lock().unwrap();
+
+            *num += 1;
+        });
+        handles.push(handle);
+    }
+
+    for handle in handles {
+        handle.join().unwrap();
+    }
+
+    println!("Result: {}", *counter.lock().unwrap());
+}
+
+fn concurrency9() {
+    let s = String::from("hello world");
+    let a = Arc::new(s);
+    let a2 = Arc::clone(&a);
+    let t = thread::spawn(move || a2.len());
+    let len = t.join().unwrap();
+    println!("{} {}", a, len);
+}
+
+/// ## Extensible Concurrency with `Sync` and `Send` Traits
+///
+/// Interestingly, the Rust language has _very few concurrency features_. Almost every concurrency
+/// feature we’ve talked about so far in this chapter has been part of the standard library,
+/// _not the language_. Your options for handling concurrency are not limited to the language or
+/// the standard library; you can write your own concurrency features or use those written by others.
+///
+/// However, two concurrency concepts are **embedded in the language**: the `std::marker` traits
+/// `Sync` and `Send`.
+///
+/// ### Allowing Transference of Ownership Between Threads with `Send`
+///
+/// The `Send` marker trait indicates that ownership of values of the type implementing `Send` can
+/// be **transferred between threads**. Almost every Rust type is `Send`, but there are some exceptions,
+/// including `Rc<T>`.
+///
+/// Any type composed entirely of `Send` types is **automatically marked as `Send` as well**. Almost
+/// all primite types are `Send`, aside from _raw pointers_, which we'll discuss later.
+///
+/// ## Allowing Access From Multiple Threads with `Sync`
+///
+/// The `Sync` marker trait indicates that it is safe for the type implementing `Sync` to be
+/// referenced from multiple threads. In other words, any type `T` is `Sync` if `&T` (an immutable
+/// reference to `T`) is `Send`, meaning the reference can be sent safely to another thread.
+/// Similar to `Send`, primitive types are `Sync`, and types composed entirely of `Sync` types
+/// are also marked as `Sync`.
+///
+/// `Sync` is the most similar concept in Rust to the colloquial meaning of the phrase
+/// **"thread-safe"**, i.e., that a particular piece of data can be safely used by multiple
+/// concurrent threads. The reason for having separate `Send` and `Sync` traits is that a type
+/// can sometimes be one, or both, or neither, for example:
+///
+///  * The smart pointer `Rc<T>` is also neither `Send` nor `Sync`, for reasons previously described.
+///  * The `RefCell<T>` type, and the family of related `Cell<T>` types, are `Send` (if `T: Send`)
+///    but they are not `Sync`. A `RefCell` can be sent across a thread boundary, but not accessed
+///    concurrently because the implementation of borrow checking that `RefCell<T>` does at runtime
+///    is not _thread-safe_.
+///  * The smart pointer `Mutex<T>` is `Send` and `Sync`, and can be used to share access with multiple
+///    threads.
+///  * The type `MutexGuard<'a, T>` that is returned by `Mutex::lock` is `Sync` (if `T: Sync`) but not
+///    `Send`. It is specifically not `Send` because **some platforms mandate that mutexes are unlocked
+///    by the same thread that locked them**.
+///
+/// ### Implementing `Send` and `Sync` Manually is Unsafe
+///
+/// Because types that are made up of `Send` and `Sync` traits are automatically also `Send` and `Sync`,
+/// we don’t have to implement those traits manually. As _marker traits_, they **don’t even have any
+/// methods to implement**. They’re just useful for enforcing invariants related to concurrency.
+///
+/// Manually implementing these traits involves implementing `unsafe` Rust code.
+
+fn concurrency10() {
+    fn show_send_sync<T: Send + Sync + Debug>(a: &T) {
+        println!("{a:?}");
+    }
+    #[derive(Debug)]
+    struct Foo {
+        _s: String,
+        _f: f64,
+    }
+    let f = Foo {
+        _s: String::from("foo"),
+        _f: 1.0,
+    };
+    show_send_sync(&f);
+}
+
 fn main() {
     println!("-=- tuple() -=-");
     tuple();
@@ -2931,4 +3298,34 @@ fn main() {
 
     println!("-=- smartptr16() -=-");
     smartptr16();
+
+    println!("-=- concurrency1() -=-");
+    concurrency1();
+
+    println!("-=- concurrency2() -=-");
+    concurrency2();
+
+    println!("-=- concurrency3() -=-");
+    concurrency3();
+
+    println!("-=- concurrency4() -=-");
+    concurrency4();
+
+    println!("-=- concurrency5() -=-");
+    concurrency5();
+
+    println!("-=- concurrency6() -=-");
+    concurrency6();
+
+    println!("-=- concurrency7() -=-");
+    concurrency7();
+
+    println!("-=- concurrency8() -=-");
+    concurrency8();
+
+    println!("-=- concurrency9() -=-");
+    concurrency9();
+
+    println!("-=- concurrency10() -=-");
+    concurrency10();
 }
