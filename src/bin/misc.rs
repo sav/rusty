@@ -1426,13 +1426,38 @@ fn lifetime4() {
     println!("The longest string is {}", result);
 }
 
+fn concat_all<'a>(
+    iter: impl Iterator<Item = String> + 'a,
+    s: &'a str
+) -> impl Iterator<Item = String> + 'a {
+    iter.map(move |s2| s2 + s)
+}
+
+fn add_displayable<'a, T: Display + 'a>(
+    v: &mut Vec<Box<dyn Display + 'a>>,
+    t: T
+) {
+    v.push(Box::new(t));
+}
+
+fn lifetime5() {
+    let v = vec![String::from("Rust")];
+    let it = concat_all(v.into_iter(), "!");
+    let w = it.collect::<Vec<_>>();
+    dbg!(w);
+
+    let mut v: Vec<Box<dyn Display>> = Vec::new();
+    add_displayable(&mut v, 5);
+    println!("{}", v[0]);
+}
+
 use std::thread;
 use std::time::Duration;
 
 fn closure1() {
     let expensive_closure = |num: u32| -> u32 {
         println!("calculating slowly...");
-        thread::sleep(Duration::from_millis(250));
+        thread::sleep(Duration::from_millis(25));
         num
     };
     println!("{}", expensive_closure(100));
@@ -2638,13 +2663,13 @@ fn concurrency1() {
     let handle = thread::spawn(|| {
         for i in 1..10 {
             println!("hi number {} from spawned thread!", i);
-            thread::sleep(Duration::from_millis(1));
+            thread::sleep(Duration::from_millis(10));
         }
     });
 
     for i in 1..5 {
         println!("hi number {} from the main thread!", i);
-        thread::sleep(Duration::from_millis(1));
+        thread::sleep(Duration::from_millis(10));
     }
 
     handle.join().unwrap();
@@ -2726,7 +2751,7 @@ fn concurrency4() {
 
         for val in vals {
             tx.send(val).unwrap();
-            thread::sleep(Duration::from_secs(1));
+            thread::sleep(Duration::from_millis(25));
         }
     });
 
@@ -2757,7 +2782,7 @@ fn concurrency5() {
 
         for val in vals {
             tx1.send(val).unwrap();
-            thread::sleep(Duration::from_secs(1));
+            thread::sleep(Duration::from_millis(25));
         }
     });
 
@@ -2771,7 +2796,7 @@ fn concurrency5() {
 
         for val in vals {
             tx.send(val).unwrap();
-            thread::sleep(Duration::from_secs(1));
+            thread::sleep(Duration::from_millis(25));
         }
     });
 
@@ -2983,6 +3008,201 @@ fn concurrency10() {
     show_send_sync(&f);
 }
 
+mod gui {
+    pub trait Draw {
+        fn draw(&self);
+    }
+
+    /// The definition below works differently from defining a struct that uses a _generic type_
+    /// parameter with _trait bounds_. A **generic type** parameter can only be substituted with
+    /// _one concrete type at a time_, whereas **trait objects** allow for _multiple concrete types_
+    /// to fill in for the trait object at runtime.
+
+    pub struct Screen {
+        // This vector is of type `Box<dyn Draw>`, which is a trait object; it’s a stand-in for
+        // _any type_ inside a `Box` that implements the `Draw` trait.
+        pub components: Vec<Box<dyn Draw>>,
+    }
+
+    impl Screen {
+        pub fn run(&self) {
+            for component in self.components.iter() {
+                component.draw();
+            }
+        }
+    }
+
+    pub struct Button {
+        pub width: u32,
+        pub height: u32,
+        pub label: String,
+    }
+
+    impl Draw for Button {
+        fn draw(&self) {
+            println!("drawing button: {:p}", self);
+        }
+    }
+}
+
+use gui::{Button, Screen};
+
+/// An example of a user-defined type.
+
+struct SelectBox {
+    width: u32,
+    height: u32,
+    options: Vec<String>,
+}
+
+impl gui::Draw for SelectBox {
+    fn draw(&self) {
+        println!("drawing select-box: {:p}", self);
+    }
+}
+
+/// # Object-Oriented Programming Features
+///
+/// ## Encapsulation that Hides Implementation Details
+///
+/// _Encapsulation_ means that the implementation details of an object aren't accessible
+/// to code using that object.
+///
+/// If encapsulation is a required aspect for a language to be considered object-oriented,
+/// then Rust **meets that requirement**. The option to use `pub` or not for different parts of
+/// code enables encapsulation of implementation details.
+///
+/// ## Inheritance as a Type System and as Code Sharing
+///
+/// Inheritance is a mechanism whereby an object can inherit elements from another object’s
+/// definition, thus gaining the parent object’s data and behavior without you having to define
+/// them again.
+///
+/// If a language must have inheritance to be an object-oriented language, then **Rust is not one**.
+/// There is no way to define a struct that inherits the parent struct’s fields and method
+/// implementations without using a macro.
+///
+/// However, if you’re used to having inheritance in your programming toolbox, you can use other
+/// solutions in Rust, depending on your reason for reaching for inheritance in the first place.
+///
+/// There are two reasons for choosing inheritance: first, to reuse the code, and second to
+/// enable a child type to be used in the same places as the parent type. The latter is called
+/// _polymorphism_. The former can be achieved vai a trait implementation. Polymorphism on the
+/// other hand, can be achieved without inheritance, using _generics_ to abstract over different
+/// possible types and trait bounds to impose constraints on what those types must provide. This
+/// is sometimes called **bounded parametric polymorphism**.
+///
+/// Inheritance has recently fallen out of favor as a programming design solution in many
+/// programming languages because it's often at risk of sharing more code than necessary. In
+/// addition, some languages wil only allow single inheritance, further restricting the
+/// flexibility of a program's design.
+///
+/// ## Using Trait Objects to Allow for Values of Different Types
+///
+/// A **trait object** points to both an instance of a type implementing a specified _trait_
+/// and a table used to look up trait methods on that type at runtime. We create a _trait object_
+/// by specifying some sort of pointer, such as a `&` reference or a `Box<T>` smart pointer,
+/// then the `dyn` keyword, and then specifying the relevant _trait_.
+///
+/// If you’ll only ever have _homogeneous collections_, using _generics_ and _trait bounds_ is
+/// **preferable** because the definitions will be monomorphized at compile time to use the
+/// concrete types.
+
+fn oop1() {
+    let screen = Screen {
+        components: vec![
+            Box::new(SelectBox {
+                width: 75,
+                height: 10,
+                options: vec![
+                    String::from("Yes"),
+                    String::from("Maybe"),
+                    String::from("No"),
+                ],
+            }),
+            Box::new(Button {
+                width: 50,
+                height: 10,
+                label: String::from("OK"),
+            }),
+        ],
+    };
+
+    screen.run();
+}
+
+/// ## Trait Objects and Type Inference
+///
+/// One downside to using _trait objects_ is how they interact with **type inference**.
+/// For example, consider type inference for `Vec<T>`. When `T` is not a _trait object_,
+/// Rust just needs to know the type of a _single element_ in the vector to infer `T`. So
+/// an empty vector causes a type inference error:
+///
+/// ```no_run
+/// let v = vec![];
+/// // error[E0282]: type annotations needed for `Vec<T>`
+/// ```
+///
+/// But adding an element enables Rust to infer the type of the vector:
+///
+/// ```no_run
+/// let v = vec!["Hello world"];
+/// // ok, v : Vec<&str>
+/// ```
+///
+/// Type inference is trickier for _trait objects_. You have to be explicit with the type
+/// in the left-hand side of the assignment (see the example below).
+///
+/// In general, it is good to be aware that using trait objects can cause a worse developer
+/// experience for API clients in the case of type inference.
+///
+/// ## Trait Objects Perform Dynamic Dispatch
+///
+/// Recall in the discussion about "performance of code using generics" seen previously, on the
+/// _monomorphization process_ performed by the compiler when we use _trait bounds_ on generics:
+/// the compiler generates _nongeneric implementations of functions and methods for each concrete type_
+/// that we use in place of a generic type parameter. The code that results from _monomorphization_
+/// is doing **static dispatch**, which is when the compiler knows what method you’re calling at
+/// compile time. This is opposed to **dynamic dispatch**, which is when the compiler can’t tell
+/// at compile time which method you’re calling. In _dynamic dispatch_ cases, the compiler emits
+/// code that at runtime will figure out which method to call.
+///
+/// When we use **trait objects**, Rust must use **dynamic dispatch**. The compiler doesn’t know
+/// all the types that might be used with the code that’s using trait objects, so it doesn’t know
+/// which method implemented on which type to call. Instead, at runtime, _Rust uses the pointers
+/// inside the trait object to know which method to call_. This **lookup** incurs a _runtime cost_
+/// that _doesn’t occur with static dispatch_. Dynamic dispatch also _prevents the compiler from
+/// choosing to inline a method’s code_, which in turn **prevents some optimizations**.
+///
+/// However, we did get **extra flexibility** in the code, so it’s a trade-off to consider.
+
+fn oop2() {
+    let components: Vec<Box<dyn gui::Draw>> = vec![
+        Box::new(SelectBox {
+            width: 75,
+            height: 10,
+            options: vec![
+                String::from("Yes"),
+                String::from("Maybe"),
+                String::from("No"),
+            ],
+        }),
+        Box::new(Button {
+            width: 50,
+            height: 10,
+            label: String::from("OK"),
+        }),
+    ];
+
+    fn p(t: &dyn gui::Draw) {
+        println!("{:p}", t);
+    }
+
+    for component in components.iter() {
+        p(component.as_ref());
+    }
+}
+
 fn main() {
     println!("-=- tuple() -=-");
     tuple();
@@ -3191,6 +3411,9 @@ fn main() {
     println!("-=- lifetime4() -=-");
     lifetime4();
 
+    println!("-=- lifetime5() -=-");
+    lifetime5();
+
     println!("-=- closure1() -=-");
     closure1();
 
@@ -3328,4 +3551,10 @@ fn main() {
 
     println!("-=- concurrency10() -=-");
     concurrency10();
+
+    println!("-=- oop1() -=-");
+    oop1();
+
+    println!("-=- oop2() -=-");
+    oop2();
 }
