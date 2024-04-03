@@ -1258,6 +1258,37 @@ fn trait5() {
     p1.cmp_display();
 }
 
+pub trait Base {
+    fn base(&self);
+}
+
+pub trait Derived: Base {
+    fn derived(&self);
+}
+
+struct Trait6A {
+    _value: i32,
+}
+
+impl Base for Trait6A {
+    fn base(&self) {
+        println!("base");
+    }
+}
+
+impl Derived for Trait6A {
+    fn derived(&self) {
+        println!("derived");
+    }
+}
+
+/// Inherited trait bound
+fn trait6() {
+    let a = Trait6A{_value: 1};
+    a.base();
+    a.derived();
+}
+
 // Lifetime annotations don’t change how long any of the references live. Rather, they describe the
 // relationships of the lifetimes of multiple references to each other without affecting the lifetimes.
 //
@@ -3398,6 +3429,9 @@ fn main() {
 
     println!("-=- trait5() -=-");
     trait5();
+
+    println!("-=- trait6() -=-");
+    trait6();
 
     println!("-=- lifetime1() -=-");
     lifetime1();
