@@ -1284,7 +1284,7 @@ impl Derived for Trait6A {
 
 /// Inherited trait bound
 fn trait6() {
-    let a = Trait6A{_value: 1};
+    let a = Trait6A { _value: 1 };
     a.base();
     a.derived();
 }
@@ -1459,15 +1459,12 @@ fn lifetime4() {
 
 fn concat_all<'a>(
     iter: impl Iterator<Item = String> + 'a,
-    s: &'a str
+    s: &'a str,
 ) -> impl Iterator<Item = String> + 'a {
     iter.map(move |s2| s2 + s)
 }
 
-fn add_displayable<'a, T: Display + 'a>(
-    v: &mut Vec<Box<dyn Display + 'a>>,
-    t: T
-) {
+fn add_displayable<'a, T: Display + 'a>(v: &mut Vec<Box<dyn Display + 'a>>, t: T) {
     v.push(Box::new(t));
 }
 
@@ -3234,6 +3231,397 @@ fn oop2() {
     }
 }
 
+/// # Patterns and Matching
+///
+/// A _pattern_ consists of some combination of the following:
+///
+///  - Literals
+///  - Destructured arrays, enums, structs, or tuples
+///  - Variables
+///  - Wildcards
+///  - Placeholders
+///
+///  Examples of patterns include `x`, `(a, 3)`, `Some(Color::Blue)`. In contexts which patterns
+///  are valid, these components describe the shape of data.
+///
+///  We'll cover the valid places to use patterns, the difference between **refutable
+///  and irrefutable patterns**, and the different kinds of pattern syntax that you might see.
+///
+///  One requirement of a `match` expression is that they need to be _exhaustive` in the
+///  sense that all possibilites for the value in the `match` expression must be accounted for.
+///
+///  The particular pattern `_` will match anything, but it never binds to a variable, so it's often
+///  used in the last match arm. The `_` pattern can be useful when you want to _ignore_ any value
+///  not specified.
+
+fn patterns1() {
+    fn iflet_cond(
+        favorite_color: Option<&str>,
+        is_tuesday: bool,
+        age: Result<u8, std::num::ParseIntError>,
+    ) {
+        // It's possible to mix and match `if let`, `else if` and `else if let` expressions.
+        if let Some(color) = favorite_color {
+            println!("using your favorite color, {color}, as the background.");
+        } else if is_tuesday {
+            println!("tuesday is green day!");
+        } else if let Ok(age) = age {
+            if age > 30 {
+                println!("using purple as the background color.");
+            } else {
+                println!("using orange as the background color.");
+            }
+        } else {
+            println!("using blue as the background color.");
+        }
+    }
+
+    iflet_cond(None, false, "34".parse());
+    iflet_cond(Some("blue"), false, "34".parse());
+    iflet_cond(None, true, "34".parse());
+
+    fn iflet_while(v: &mut Vec<char>) {
+        while let Some(top) = v.pop() {
+            print!("{} ", top);
+        }
+        println!("");
+    }
+
+    iflet_while(&mut vec!['a', 'b', 'c']);
+
+    // In a `for` loop, the value that directly follows the keyword `for` is a pattern. For example
+    // `for x in y` the `x` is the pattern.
+    let v = vec!['a', 'b', 'c'];
+    for (index, value) in v.iter().enumerate() {
+        print!("{}.{} ", index, value);
+    }
+    println!("");
+
+    // A simple `let` statement also uses patterns in the form `let PATTERN = EXPRESSION`.
+    let (x, y, z) = (1, 2, 3);
+    println!("{x}, {y}, {z}");
+
+    // function parameters also...
+    fn print_coordinates(&(x, y): &(i32, i32)) {
+        println!("current coordinate: ({}, {})", x, y);
+    }
+    print_coordinates(&(3, 5));
+}
+
+/// ## Refutability: Whether a Pattern Might Fail to Match
+///
+/// Patterns come in two forms: **refutable** and **irrefutable**. Patterns that will match for any possible value
+/// passed are irrefutable. An example would be `x` in the statement `let x = 5;` because `x` matches anything and
+/// therefore cannot fail to match. Patterns that can fail to match for some possible value are refutable. Here are
+/// some examples:
+///
+///   - In the expression `if let Some(x) = a_value`, then `Some(x)` is refutable. If the value in the `a_value`
+///     variable is `None` rather than `Some`, the `Some(x)` pattern will not match.
+///   - In the expression `if let &[x, ..] = a_slice`, then `&[x, ..]` is refutable. If the value in the `a_slice`
+///     variable has zero elements, the `&[x, ..]` pattern will not match.
+///
+/// If we have a _refutable pattern_ where an _irrefutable pattern_ is needed, we can fix it by changing the code
+/// that uses the pattern: instead of using `let`, we can use `if let`.
+
+fn patterns2() {
+    // let Some(x) = some_option_value; // won't compile
+    if let Some(x) = Some(5) {
+        println!("{}", x);
+    }
+
+    // Rust complains if we try to use an _irrefutable pattern_ with `if let`.
+    if let x = 5 {
+        println!("{}", x);
+    };
+
+    let x: &[(i32, i32)] = &[(0, 1)];
+    println!("{:?}", x);
+}
+
+/// ## Pattern Syntax
+
+fn patterns3() {
+    /// ### Literals
+    fn match_int(x: i32) {
+        match x {
+            1 => println!("one"),
+            2 => println!("two"),
+            3 => println!("three"),
+            4 => println!("four"),
+            _ => println!("anything"),
+        }
+    }
+    match_int(1);
+    match_int(5);
+
+    /// ### Named variables
+    fn match_namedvar(x: Option<i32>) {
+        match x {
+            Some(50) => println!("Got 50"),
+            Some(y) => println!("Matched, y = {y}"),
+            _ => println!("Default case, x = {:?}", x),
+        }
+    }
+
+    let x = Some(5);
+    let y = 10;
+    match_namedvar(x);
+    println!("at the end: x = {:?}, y = {y}", x);
+
+    /// ### Multiple
+    fn match_multiple(x: i32) {
+        match x {
+            1 | 2 => println!("one or two"),
+            3 => println!("three"),
+            _ => println!("anything"),
+        }
+    }
+
+    match_multiple(1);
+    match_multiple(4);
+
+    /// ### Range of Values
+    fn match_range(x: i32, c: char) {
+        match x {
+            1..=5 => println!("one through five"),
+            _ => println!("something else"),
+        }
+        match c {
+            'a'..='j' => println!("early ASCII letter"),
+            'k'..='z' => println!("late ASCII letter"),
+            _ => println!("something else"),
+        }
+    }
+
+    match_range(1, 'a');
+    match_range(6, '~');
+
+    /// ### Destructuring to Break Apart Values
+    fn destructure_values() {
+        struct Point {
+            x: i32,
+            y: i32,
+        }
+        let p = Point { x: 0, y: 7 };
+        let Point { x: a, y: b } = p; // destructure `p` into `a` and `b`.
+
+        assert_eq!(0, a);
+        assert_eq!(7, b);
+
+        println!("{a} {b}");
+
+        let Point { x, y } = p; // destructure `p` into `x` and `y`.
+        assert_eq!(0, x);
+        assert_eq!(7, y);
+
+        println!("{x} {y}");
+
+        match p {
+            // destructure `p` and match literal values
+            Point { x, y: 0 } => println!("{x} 0"),
+            Point { x: 0, y } => println!("0 {y}"),
+            Point { x, y } => println!("{x} {y}"),
+        }
+    }
+
+    destructure_values();
+
+    /// ### Destructuring Enums
+    fn destructure_enums() {
+        enum Message {
+            Quit,
+            Move { x: i32, y: i32 },
+            Write(String),
+            ChangeColor(i32, i32, i32),
+        }
+
+        let msg = Message::ChangeColor(0, 160, 255);
+        match msg {
+            Message::Quit => {
+                println!("The Quit variant has no data to destructure.");
+            }
+            Message::Move { x, y } => {
+                println!("Move in the x direction {x} and in the y direction {y}");
+            }
+            Message::Write(text) => {
+                println!("Text message: {text}");
+            }
+            Message::ChangeColor(r, g, b) => {
+                println!("Change the color to red {r}, green {g}, and blue {b}",)
+            }
+        }
+    }
+
+    destructure_enums();
+
+    /// ### Destructuring Nested Structs and Enums
+    fn destructure_nested_structs_and_enums() {
+        enum Color {
+            Rgb(i32, i32, i32),
+            Hsv(i32, i32, i32),
+        }
+
+        enum Message {
+            Quit,
+            Move { x: i32, y: i32 },
+            Write(String),
+            ChangeColor(Color),
+        }
+
+        let msg = Message::ChangeColor(Color::Hsv(0, 160, 255));
+        match msg {
+            Message::ChangeColor(Color::Rgb(r, g, b)) => {
+                println!("Change color to red {r}, green {g}, and blue {b}");
+            }
+            Message::ChangeColor(Color::Hsv(h, s, v)) => {
+                println!("Change color to hue {h}, saturation {s}, value {v}")
+            }
+            _ => (),
+        }
+    }
+
+    destructure_nested_structs_and_enums();
+
+    /// ### Destructuring Structs and Tuples
+    fn destructure_structs_and_tuples() {
+        let ((feet, inches), Point { x, y }) = ((3, 10), Point { x: 3, y: -10 });
+        println!("{feet} {inches} {x} {y}");
+    }
+
+    destructure_structs_and_tuples();
+
+    /// ### Ignoring Parts of a Value with Nested `_`
+    fn ignore_nested() {
+        let mut setting_value = Some(5);
+        let new_setting_value = Some(10);
+
+        match (setting_value, new_setting_value) {
+            (Some(_), Some(_)) => {
+                println!("Can't overwrite an existing customized value");
+            }
+            _ => {
+                setting_value = new_setting_value;
+            }
+        }
+        println!("setting is {:?}", setting_value);
+
+        let numbers = (2, 4, 8, 16, 32);
+        match numbers {
+            (first, _, third, _, fifth) => {
+                println!("Some numbers: {first}, {third}, {fifth}")
+            }
+        }
+    }
+
+    ignore_nested();
+
+    /// ### Ignoring an Unused Variable by Starting its Name with `_`
+    fn ignore_unused_vars() {
+        let _x = 5;
+        let _y = 10;
+
+        let s = Some(String::from("Hello!"));
+        if let Some(_s) = s {
+            println!("found a string");
+        }
+        println!("{:?}", s);
+
+        let s = Some(String::from("Hello!"));
+        if let Some(_) = s {
+            println!("found a string");
+        }
+        println!("{:?}", s);
+    }
+
+    ignore_unused_vars();
+
+    /// ### Ignoring Remaning Parts of a Value with ..
+    ///
+    /// With values that have many parts, we can use the `..` syntax to use specific parts and ignore the rest, avoiding
+    /// the need to list underscores for each ignored value. The `..` pattern ignores any parts of a value that we haven’t
+    /// explicitly matched in the rest of the pattern.
+    ///
+    /// The syntax `..` will expand to as many values as it needs to be. However, using .. must be unambiguous. If it is
+    /// unclear which values are intended for matching and which should be ignored, Rust will give us an error.
+    fn ignore_value_parts() {
+        struct Point {
+            x: i32,
+            y: i32,
+            z: i32,
+        }
+
+        let origin = Point { x: 0, y: 0, z: 0 };
+        match origin {
+            Point { x, .. } => println!("x is {}", x),
+        }
+
+        let numbers = (2, 4, 8, 16, 32);
+        match numbers {
+            (first, .., last) => {
+                println!("Some numbers: {first}, {last}");
+            }
+        }
+    }
+
+    ignore_value_parts();
+
+    /// ### Extra Conditionals with Match Guards
+    ///
+    /// A _match guard_ is an additional `if` condition, specified after the pattern in a `match` arm, that must also match
+    /// for that arm to be chosen. Match guards are useful for expressing more complex ideas than a pattern alone allows.
+    fn match_guards() {
+        let num = Some(4);
+        match num {
+            Some(x) if x % 2 == 0 => println!("The number {} is even", x),
+            Some(x) => println!("The number {} is odd", x),
+            None => (),
+        }
+
+        let x = Some(5);
+        let y = 10;
+        match x {
+            Some(50) => println!("Got 50"),
+            Some(n) if n == y => println!("Matched, n = {n}"),
+            _ => println!("Default case, x = {:?}", x),
+        }
+        println!("at the end: x = {:?}, y = {y}", x);
+
+        let x = 4;
+        let y = false;
+        match x {
+            4 | 5 | 6 if y => println!("yes"),
+            _ => println!("no"),
+        }
+    }
+
+    match_guards();
+
+    /// ### `@` Bindings
+    ///
+    /// The at operator `@` lets us create a variable that holds a value at the same time as we’re testing that
+    /// value for a pattern match.
+    fn at_bindings() {
+        enum Message {
+            Hello { id: i32 },
+        }
+
+        let msg = Message::Hello { id: 5 };
+        match msg {
+            // Test that a `Message::Hello` `id` field is within the range `3..=7` and bind the value to the
+            // variable `id_variable`.
+            Message::Hello {
+                id: id_variable @ 3..=7,
+            } => println!("Found an id in range: {}", id_variable),
+            Message::Hello { id: 10..=12 } => {
+                println!("Found an id in another range")
+            }
+            Message::Hello { id } => println!("Found some other id: {}", id),
+        }
+    }
+
+    at_bindings();
+}
+
 fn main() {
     println!("-=- tuple() -=-");
     tuple();
@@ -3591,4 +3979,13 @@ fn main() {
 
     println!("-=- oop2() -=-");
     oop2();
+
+    println!("-=- patterns1() -=-");
+    patterns1();
+
+    println!("-=- patterns2() -=-");
+    patterns2();
+
+    println!("-=- patterns3() -=-");
+    patterns3();
 }
