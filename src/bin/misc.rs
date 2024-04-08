@@ -1996,7 +1996,8 @@ fn smartptr1() {
     println!("n = {}", n);
 }
 
-/// First attempt at defining an enum to represent a cons list data structure of `i32` values:
+/// First attempt at defining an enum to represent a cons list data structure of
+/// `i32` values:
 ///
 /// ```no_run
 /// enum List {
@@ -2005,19 +2006,22 @@ fn smartptr1() {
 /// }
 /// ```
 ///
-/// Fails to compile with the error: **recursive type has infinite size**. Inserting an indirection,
-/// like `Box`, `Rc` or `&` enables proper compilation. (see `List` definition).
+/// Fails to compile with the error: **recursive type has infinite size**.
+/// Inserting an indirection, like `Box`, `Rc` or `&` enables proper
+/// compilation. (see `List` definition).
 ///
-/// The `Cons` variant needs the size of an `i32` plus the space to store the box’s pointer data.
-/// The `Nil` variant stores no values, so it needs less space than the `Cons` variant. We now
-/// know that any `List` value will take up the size of an `i32` plus the size of a box’s pointer data.
+/// The `Cons` variant needs the size of an `i32` plus the space to store the
+/// box’s pointer data. The `Nil` variant stores no values, so it needs less
+/// space than the `Cons` variant. We now know that any `List` value will take
+/// up the size of an `i32` plus the size of a box’s pointer data.
 ///
-/// In a 64-bit architecture, if we consider `Box<T>`, it will occupy 4 bytes, equating to the size of a
-/// pointer on such systems.
+/// In a 64-bit architecture, if we consider `Box<T>`, it will occupy 4 bytes,
+/// equating to the size of a pointer on such systems.
 ///
-/// The `Box<T>` type is a smart pointer because it implements the `Deref` trait, which allows `Box<T>`
-/// values to be treated like references. When a `Box<T>` value goes out of scope, the heap data that
-/// the box is pointing to is cleaned up as well because of the `Drop` trait implementation.
+/// The `Box<T>` type is a smart pointer because it implements the `Deref`
+/// trait, which allows `Box<T>` values to be treated like references. When a
+/// `Box<T>` value goes out of scope, the heap data that the box is pointing to
+/// is cleaned up as well because of the `Drop` trait implementation.
 
 #[derive(Debug)]
 enum List1 {
@@ -2059,16 +2063,18 @@ fn smartptr2() {
     println!("");
 }
 
-/// Implementing the `Deref` trait allows you to customize the behavior of the dereference operator `*`.
-/// We’ll explore how implementing the Deref trait makes it possible for smart pointers to work in ways
-/// similar to references. Then we’ll look at Rust’s deref coercion feature and how it lets us work with
-/// either references or smart pointers.
+/// Implementing the `Deref` trait allows you to customize the behavior of the
+/// dereference operator `*`. We’ll explore how implementing the Deref trait
+/// makes it possible for smart pointers to work in ways similar to references.
+/// Then we’ll look at Rust’s deref coercion feature and how it lets us work
+/// with either references or smart pointers.
 ///
 /// Without the Deref trait, the compiler can only dereference & references.
 ///
-/// Note: there’s one big difference between the `MyBox<T>` type we’re about to build and the real `Box<T>`:
-/// our version will not store its data on the heap. We are focusing this example on `Deref`, so where the
-/// data is actually stored is less important than the pointer-like behavior.
+/// Note: there’s one big difference between the `MyBox<T>` type we’re about to
+/// build and the real `Box<T>`: our version will not store its data on the
+/// heap. We are focusing this example on `Deref`, so where the data is actually
+/// stored is less important than the pointer-like behavior.
 
 struct MyBox<T>(T);
 
@@ -2512,20 +2518,23 @@ impl List3 {
 
 /// ## _Reference cycles_ can **leak memory**.
 ///
-/// Rust's memory safey guarantees make it difficult, but not impossible, to accidentally create
-/// _memory leak_.
+/// Rust's memory safey guarantees make it difficult, but not impossible, to
+/// accidentally create _memory leak_.
 ///
-/// We can see that Rust allows memory leaks by using `Rc<T>` and `RefCell<T>`: it's possible
-/// to create references where **items refer to each other in a cycle**. This creates memory leaks
-/// because the reference count of each item in the cycle will **never reach 0**, and the values will
-/// **never be dropped**.
+/// We can see that Rust allows memory leaks by using `Rc<T>` and `RefCell<T>`:
+/// it's possible to create references where **items refer to each other in a
+/// cycle**. This creates memory leaks because the reference count of each item
+/// in the cycle will **never reach 0**, and the values will **never be
+/// dropped**.
 ///
-/// At the end of `smartptr13`, Rust drops the variable `b`, which decreases the reference count of
-/// the `b` `Rc<List>` instance from 2 to 1. The memory that `Rc<List>` has on the heap won’t be
-/// dropped at this point, because its reference count is 1, not 0. Then Rust drops `a`, which
-/// decreases the reference count of the `a` `Rc<List>` instance from 2 to 1 as well. This instance’s
-/// memory can’t be dropped either, because the other `Rc<List>` instance still refers to it.
-/// The memory allocated to the list will remain uncollected forever.
+/// At the end of `smartptr13`, Rust drops the variable `b`, which decreases the
+/// reference count of the `b` `Rc<List>` instance from 2 to 1. The memory that
+/// `Rc<List>` has on the heap won’t be dropped at this point, because its
+/// reference count is 1, not 0. Then Rust drops `a`, which decreases the
+/// reference count of the `a` `Rc<List>` instance from 2 to 1 as well. This
+/// instance’s memory can’t be dropped either, because the other `Rc<List>`
+/// instance still refers to it. The memory allocated to the list will remain
+/// uncollected forever.
 
 fn smartptr13() {
     let a = Rc::new(Cons3(5, RefCell::new(Rc::new(Nil3))));
@@ -2671,13 +2680,13 @@ fn smartptr16() {
 
 /// ## Fearless Concurrency
 ///
-/// Fearless concurrency allows you to write code that is free of subtle bugs and
-/// is easy to refactor without introducing new bugs.
+/// Fearless concurrency allows you to write code that is free of subtle bugs
+/// and is easy to refactor without introducing new bugs.
 ///
-/// Since lower-level languages are expected to provide the solution with the best
-/// performance in any given situation and have fewer abstractions over the hardware,
-/// Rust offers a variety of tools for modeling problems in whatever way is appropriate
-/// for your situation and requirements.
+/// Since lower-level languages are expected to provide the solution with the
+/// best performance in any given situation and have fewer abstractions over the
+/// hardware, Rust offers a variety of tools for modeling problems in whatever
+/// way is appropriate for your situation and requirements.
 ///
 /// Topic we'll cover next:
 ///
@@ -2872,46 +2881,52 @@ use std::sync::{Arc, Mutex};
 
 /// ## Shared-State Concurrency
 ///
-/// In a way, channels in any programming language are similar to _single ownership_, because once
-/// you transfer a value down a channel, you should _no longer use that value_. Shared memory
-/// concurrency is like _multiple ownership_: multiple threads can access the same memory location
-/// _at the same time_.
+/// In a way, channels in any programming language are similar to _single
+/// ownership_, because once you transfer a value down a channel, you should _no
+/// longer use that value_. Shared memory concurrency is like _multiple
+/// ownership_: multiple threads can access the same memory location _at the
+/// same time_.
 ///
-/// Let’s look at _mutexes_, one of the more common concurrency primitives for shared memory.
+/// Let’s look at _mutexes_, one of the more common concurrency primitives for
+/// shared memory.
 ///
-/// Mutexes have a reputation for being difficult to use because you have to remember two rules:
+/// Mutexes have a reputation for being difficult to use because you have to
+/// remember two rules:
 ///   - You must attempt to acquire the lock before using the data.
 ///   - When you’re done with the data that the mutex guards, you must unlock the data
 ///     so other threads can acquire the lock.
 ///
-/// Management of mutexes can be _incredibly tricky to get right_, which is why so many people
-/// are enthusiastic about channels. However, thanks to Rust’s type system and ownership rules,
-/// you can’t get locking and unlocking wrong.
+/// Management of mutexes can be _incredibly tricky to get right_, which is why
+/// so many people are enthusiastic about channels. However, thanks to Rust’s
+/// type system and ownership rules, you can’t get locking and unlocking wrong.
 ///
 /// Let’s start by using a mutex in a single-threaded context.
 ///
-/// As you might suspect, `Mutex<T>` is a _smart pointer_. More accurately, the call to `lock`
-/// returns a smart pointer called `MutexGuard`, wrapped in a `LockResult` that we handled with
-/// the call to `unwrap`. The `MutexGuard` smart pointer implements `Deref` to point at our inner
-/// data; the smart pointer also has a `Drop` implementation that **releases the lock automatically**
-/// when a `MutexGuard` goes out of scope, which happens at the end of the inner scope.
+/// As you might suspect, `Mutex<T>` is a _smart pointer_. More accurately, the
+/// call to `lock` returns a smart pointer called `MutexGuard`, wrapped in a
+/// `LockResult` that we handled with the call to `unwrap`. The `MutexGuard`
+/// smart pointer implements `Deref` to point at our inner data; the smart
+/// pointer also has a `Drop` implementation that **releases the lock
+/// automatically** when a `MutexGuard` goes out of scope, which happens at the
+/// end of the inner scope.
 ///
-/// The type of `m` is `Mutex<i32>`, not `i32`, so we **must call lock** to be able to use the `i32` value.
-/// We can’t forget; the _type system_ **won’t let us access the inner `i32` otherwise**.
+/// The type of `m` is `Mutex<i32>`, not `i32`, so we **must call lock** to be
+/// able to use the `i32` value. We can’t forget; the _type system_ **won’t let
+/// us access the inner `i32` otherwise**.
 ///
-/// After we’ve acquired the lock, we can treat the return value, named num in this case, as a mutable
-/// reference to the data inside.
+/// After we’ve acquired the lock, we can treat the return value, named num in
+/// this case, as a mutable reference to the data inside.
 ///
-/// After dropping the lock, we can print the mutex value and see that we were able to change the
-/// inner `i32` to `6`.
+/// After dropping the lock, we can print the mutex value and see that we were
+/// able to change the inner `i32` to `6`.
 ///
-/// The call to `lock` would fail if another thread holding the lock panicked. In that case, no one
-/// would ever be able to get the lock, so we’ve chosen to `unwrap` and have this thread panic if we’re
-/// in that situation.
+/// The call to `lock` would fail if another thread holding the lock panicked.
+/// In that case, no one would ever be able to get the lock, so we’ve chosen to
+/// `unwrap` and have this thread panic if we’re in that situation.
 ///
-/// Recall that using `Rc<T>` came with the risk of creating reference cycles, where two `Rc<T>` values
-/// refer to each other, causing memory leaks. Similarly, `Mutex<T>` comes with the risk of creating
-/// **deadlocks**.
+/// Recall that using `Rc<T>` came with the risk of creating reference cycles,
+/// where two `Rc<T>` values refer to each other, causing memory leaks.
+/// Similarly, `Mutex<T>` comes with the risk of creating **deadlocks**.
 
 fn concurrency7() {
     let m = Mutex::new(5);
@@ -2928,15 +2943,17 @@ fn concurrency7() {
 ///
 /// ### Atomic Reference Counting with `Arc<T>`
 ///
-/// In the same way we used `RefCell<T>` to allow us to mutate contents inside an `Rc<T>`, we
-/// use `Mutex<T>` to mutate contents inside an `Arc<T>`.
+/// In the same way we used `RefCell<T>` to allow us to mutate contents inside
+/// an `Rc<T>`, we use `Mutex<T>` to mutate contents inside an `Arc<T>`.
 ///
-/// You may notice that `counter` is immutable but we could get a mutable reference to the value
-/// inside it; this means `Mutex<T>` provides _interior mutability_, as the `Cell` family does.
+/// You may notice that `counter` is immutable but we could get a mutable
+/// reference to the value inside it; this means `Mutex<T>` provides _interior
+/// mutability_, as the `Cell` family does.
 ///
-/// You might then wonder why all primitive types aren’t atomic and why standard library types
-/// aren’t implemented to use `Arc<T>` by default. The reason is that thread safety comes with
-/// a performance penalty that you only want to pay when you really need to.
+/// You might then wonder why all primitive types aren’t atomic and why standard
+/// library types aren’t implemented to use `Arc<T>` by default. The reason is
+/// that thread safety comes with a performance penalty that you only want to
+/// pay when you really need to.
 
 fn concurrency8() {
     // Recall that `Rc<T>` is not _thread-safe_.
@@ -2971,52 +2988,60 @@ fn concurrency9() {
 
 /// ## Extensible Concurrency with `Sync` and `Send` Traits
 ///
-/// Interestingly, the Rust language has _very few concurrency features_. Almost every concurrency
-/// feature we’ve talked about so far in this chapter has been part of the standard library,
-/// _not the language_. Your options for handling concurrency are not limited to the language or
-/// the standard library; you can write your own concurrency features or use those written by others.
+/// Interestingly, the Rust language has _very few concurrency features_. Almost
+/// every concurrency feature we’ve talked about so far in this chapter has been
+/// part of the standard library, _not the language_. Your options for handling
+/// concurrency are not limited to the language or the standard library; you can
+/// write your own concurrency features or use those written by others.
 ///
-/// However, two concurrency concepts are **embedded in the language**: the `std::marker` traits
-/// `Sync` and `Send`.
+/// However, two concurrency concepts are **embedded in the language**: the
+/// `std::marker` traits `Sync` and `Send`.
 ///
 /// ### Allowing Transference of Ownership Between Threads with `Send`
 ///
-/// The `Send` marker trait indicates that ownership of values of the type implementing `Send` can
-/// be **transferred between threads**. Almost every Rust type is `Send`, but there are some exceptions,
-/// including `Rc<T>`.
+/// The `Send` marker trait indicates that ownership of values of the type
+/// implementing `Send` can be **transferred between threads**. Almost every
+/// Rust type is `Send`, but there are some exceptions, including `Rc<T>`.
 ///
-/// Any type composed entirely of `Send` types is **automatically marked as `Send` as well**. Almost
-/// all primite types are `Send`, aside from _raw pointers_, which we'll discuss later.
+/// Any type composed entirely of `Send` types is **automatically marked as
+/// `Send` as well**. Almost all primite types are `Send`, aside from _raw
+/// pointers_, which we'll discuss later.
 ///
 /// ## Allowing Access From Multiple Threads with `Sync`
 ///
-/// The `Sync` marker trait indicates that it is safe for the type implementing `Sync` to be
-/// referenced from multiple threads. In other words, any type `T` is `Sync` if `&T` (an immutable
-/// reference to `T`) is `Send`, meaning the reference can be sent safely to another thread.
-/// Similar to `Send`, primitive types are `Sync`, and types composed entirely of `Sync` types
-/// are also marked as `Sync`.
+/// The `Sync` marker trait indicates that it is safe for the type implementing
+/// `Sync` to be referenced from multiple threads. In other words, any type `T`
+/// is `Sync` if `&T` (an immutable reference to `T`) is `Send`, meaning the
+/// reference can be sent safely to another thread. Similar to `Send`, primitive
+/// types are `Sync`, and types composed entirely of `Sync` types are also
+/// marked as `Sync`.
 ///
-/// `Sync` is the most similar concept in Rust to the colloquial meaning of the phrase
-/// **"thread-safe"**, i.e., that a particular piece of data can be safely used by multiple
-/// concurrent threads. The reason for having separate `Send` and `Sync` traits is that a type
-/// can sometimes be one, or both, or neither, for example:
+/// `Sync` is the most similar concept in Rust to the colloquial meaning of the
+/// phrase **"thread-safe"**, i.e., that a particular piece of data can be
+/// safely used by multiple concurrent threads. The reason for having separate
+/// `Send` and `Sync` traits is that a type can sometimes be one, or both, or
+/// neither, for example:
 ///
-///  * The smart pointer `Rc<T>` is also neither `Send` nor `Sync`, for reasons previously described.
-///  * The `RefCell<T>` type, and the family of related `Cell<T>` types, are `Send` (if `T: Send`)
-///    but they are not `Sync`. A `RefCell` can be sent across a thread boundary, but not accessed
-///    concurrently because the implementation of borrow checking that `RefCell<T>` does at runtime
-///    is not _thread-safe_.
-///  * The smart pointer `Mutex<T>` is `Send` and `Sync`, and can be used to share access with multiple
-///    threads.
-///  * The type `MutexGuard<'a, T>` that is returned by `Mutex::lock` is `Sync` (if `T: Sync`) but not
-///    `Send`. It is specifically not `Send` because **some platforms mandate that mutexes are unlocked
-///    by the same thread that locked them**.
+///  * The smart pointer `Rc<T>` is also neither `Send` nor `Sync`, for reasons
+///    previously described.
+///  * The `RefCell<T>` type, and the family of related `Cell<T>` types, are
+///    `Send` (if `T: Send`) but they are not `Sync`. A `RefCell` can be sent
+///    across a thread boundary, but not accessed concurrently because the
+///    implementation of borrow checking that `RefCell<T>` does at runtime is not
+///    _thread-safe_.
+///  * The smart pointer `Mutex<T>` is `Send` and `Sync`, and can be used to
+///    share access with multiple threads.
+///  * The type `MutexGuard<'a, T>` that is returned by `Mutex::lock` is `Sync`
+///    (if `T: Sync`) but not `Send`. It is specifically not `Send` because **some
+///    platforms mandate that mutexes are unlocked by the same thread that locked
+///    them**.
 ///
 /// ### Implementing `Send` and `Sync` Manually is Unsafe
 ///
-/// Because types that are made up of `Send` and `Sync` traits are automatically also `Send` and `Sync`,
-/// we don’t have to implement those traits manually. As _marker traits_, they **don’t even have any
-/// methods to implement**. They’re just useful for enforcing invariants related to concurrency.
+/// Because types that are made up of `Send` and `Sync` traits are automatically
+/// also `Send` and `Sync`, we don’t have to implement those traits manually. As
+/// _marker traits_, they **don’t even have any methods to implement**. They’re
+/// just useful for enforcing invariants related to concurrency.
 ///
 /// Manually implementing these traits involves implementing `unsafe` Rust code.
 
@@ -3041,10 +3066,11 @@ mod gui {
         fn draw(&self);
     }
 
-    /// The definition below works differently from defining a struct that uses a _generic type_
-    /// parameter with _trait bounds_. A **generic type** parameter can only be substituted with
-    /// _one concrete type at a time_, whereas **trait objects** allow for _multiple concrete types_
-    /// to fill in for the trait object at runtime.
+    /// The definition below works differently from defining a struct that uses
+    /// a _generic type_ parameter with _trait bounds_. A **generic type**
+    /// parameter can only be substituted with _one concrete type at a time_,
+    /// whereas **trait objects** allow for _multiple concrete types_ to fill in
+    /// for the trait object at runtime.
 
     pub struct Screen {
         // This vector is of type `Box<dyn Draw>`, which is a trait object; it’s a stand-in for
@@ -3093,48 +3119,52 @@ impl gui::Draw for SelectBox {
 ///
 /// ## Encapsulation that Hides Implementation Details
 ///
-/// _Encapsulation_ means that the implementation details of an object aren't accessible
-/// to code using that object.
+/// _Encapsulation_ means that the implementation details of an object aren't
+/// accessible to code using that object.
 ///
-/// If encapsulation is a required aspect for a language to be considered object-oriented,
-/// then Rust **meets that requirement**. The option to use `pub` or not for different parts of
-/// code enables encapsulation of implementation details.
+/// If encapsulation is a required aspect for a language to be considered
+/// object-oriented, then Rust **meets that requirement**. The option to use
+/// `pub` or not for different parts of code enables encapsulation of
+/// implementation details.
 ///
 /// ## Inheritance as a Type System and as Code Sharing
 ///
-/// Inheritance is a mechanism whereby an object can inherit elements from another object’s
-/// definition, thus gaining the parent object’s data and behavior without you having to define
-/// them again.
+/// Inheritance is a mechanism whereby an object can inherit elements from
+/// another object’s definition, thus gaining the parent object’s data and
+/// behavior without you having to define them again.
 ///
-/// If a language must have inheritance to be an object-oriented language, then **Rust is not one**.
-/// There is no way to define a struct that inherits the parent struct’s fields and method
-/// implementations without using a macro.
+/// If a language must have inheritance to be an object-oriented language, then
+/// **Rust is not one**. There is no way to define a struct that inherits the
+/// parent struct’s fields and method implementations without using a macro.
 ///
-/// However, if you’re used to having inheritance in your programming toolbox, you can use other
-/// solutions in Rust, depending on your reason for reaching for inheritance in the first place.
+/// However, if you’re used to having inheritance in your programming toolbox,
+/// you can use other solutions in Rust, depending on your reason for reaching
+/// for inheritance in the first place.
 ///
-/// There are two reasons for choosing inheritance: first, to reuse the code, and second to
-/// enable a child type to be used in the same places as the parent type. The latter is called
-/// _polymorphism_. The former can be achieved vai a trait implementation. Polymorphism on the
-/// other hand, can be achieved without inheritance, using _generics_ to abstract over different
-/// possible types and trait bounds to impose constraints on what those types must provide. This
-/// is sometimes called **bounded parametric polymorphism**.
+/// There are two reasons for choosing inheritance: first, to reuse the code,
+/// and second to enable a child type to be used in the same places as the
+/// parent type. The latter is called _polymorphism_. The former can be achieved
+/// vai a trait implementation. Polymorphism on the other hand, can be achieved
+/// without inheritance, using _generics_ to abstract over different possible
+/// types and trait bounds to impose constraints on what those types must
+/// provide. This is sometimes called **bounded parametric polymorphism**.
 ///
-/// Inheritance has recently fallen out of favor as a programming design solution in many
-/// programming languages because it's often at risk of sharing more code than necessary. In
-/// addition, some languages wil only allow single inheritance, further restricting the
-/// flexibility of a program's design.
+/// Inheritance has recently fallen out of favor as a programming design
+/// solution in many programming languages because it's often at risk of sharing
+/// more code than necessary. In addition, some languages wil only allow single
+/// inheritance, further restricting the flexibility of a program's design.
 ///
 /// ## Using Trait Objects to Allow for Values of Different Types
 ///
-/// A **trait object** points to both an instance of a type implementing a specified _trait_
-/// and a table used to look up trait methods on that type at runtime. We create a _trait object_
-/// by specifying some sort of pointer, such as a `&` reference or a `Box<T>` smart pointer,
-/// then the `dyn` keyword, and then specifying the relevant _trait_.
+/// A **trait object** points to both an instance of a type implementing a
+/// specified _trait_ and a table used to look up trait methods on that type at
+/// runtime. We create a _trait object_ by specifying some sort of pointer, such
+/// as a `&` reference or a `Box<T>` smart pointer, then the `dyn` keyword, and
+/// then specifying the relevant _trait_.
 ///
-/// If you’ll only ever have _homogeneous collections_, using _generics_ and _trait bounds_ is
-/// **preferable** because the definitions will be monomorphized at compile time to use the
-/// concrete types.
+/// If you’ll only ever have _homogeneous collections_, using _generics_ and
+/// _trait bounds_ is **preferable** because the definitions will be
+/// monomorphized at compile time to use the concrete types.
 
 fn oop1() {
     let screen = Screen {
@@ -3161,10 +3191,11 @@ fn oop1() {
 
 /// ## Trait Objects and Type Inference
 ///
-/// One downside to using _trait objects_ is how they interact with **type inference**.
-/// For example, consider type inference for `Vec<T>`. When `T` is not a _trait object_,
-/// Rust just needs to know the type of a _single element_ in the vector to infer `T`. So
-/// an empty vector causes a type inference error:
+/// One downside to using _trait objects_ is how they interact with **type
+/// inference**. For example, consider type inference for `Vec<T>`. When `T` is
+/// not a _trait object_, Rust just needs to know the type of a _single element_
+/// in the vector to infer `T`. So an empty vector causes a type inference
+/// error:
 ///
 /// ```no_run
 /// let v = vec![];
@@ -3178,31 +3209,36 @@ fn oop1() {
 /// // ok, v : Vec<&str>
 /// ```
 ///
-/// Type inference is trickier for _trait objects_. You have to be explicit with the type
-/// in the left-hand side of the assignment (see the example below).
+/// Type inference is trickier for _trait objects_. You have to be explicit with
+/// the type in the left-hand side of the assignment (see the example below).
 ///
-/// In general, it is good to be aware that using trait objects can cause a worse developer
-/// experience for API clients in the case of type inference.
+/// In general, it is good to be aware that using trait objects can cause a
+/// worse developer experience for API clients in the case of type inference.
 ///
 /// ## Trait Objects Perform Dynamic Dispatch
 ///
-/// Recall in the discussion about "performance of code using generics" seen previously, on the
-/// _monomorphization process_ performed by the compiler when we use _trait bounds_ on generics:
-/// the compiler generates _nongeneric implementations of functions and methods for each concrete type_
-/// that we use in place of a generic type parameter. The code that results from _monomorphization_
-/// is doing **static dispatch**, which is when the compiler knows what method you’re calling at
-/// compile time. This is opposed to **dynamic dispatch**, which is when the compiler can’t tell
-/// at compile time which method you’re calling. In _dynamic dispatch_ cases, the compiler emits
+/// Recall in the discussion about "performance of code using generics" seen
+/// previously, on the _monomorphization process_ performed by the compiler when
+/// we use _trait bounds_ on generics: the compiler generates _nongeneric
+/// implementations of functions and methods for each concrete type_ that we use
+/// in place of a generic type parameter. The code that results from
+/// _monomorphization_ is doing **static dispatch**, which is when the compiler
+/// knows what method you’re calling at compile time. This is opposed to
+/// **dynamic dispatch**, which is when the compiler can’t tell at compile time
+/// which method you’re calling. In _dynamic dispatch_ cases, the compiler emits
 /// code that at runtime will figure out which method to call.
 ///
-/// When we use **trait objects**, Rust must use **dynamic dispatch**. The compiler doesn’t know
-/// all the types that might be used with the code that’s using trait objects, so it doesn’t know
-/// which method implemented on which type to call. Instead, at runtime, _Rust uses the pointers
-/// inside the trait object to know which method to call_. This **lookup** incurs a _runtime cost_
-/// that _doesn’t occur with static dispatch_. Dynamic dispatch also _prevents the compiler from
-/// choosing to inline a method’s code_, which in turn **prevents some optimizations**.
+/// When we use **trait objects**, Rust must use **dynamic dispatch**. The
+/// compiler doesn’t know all the types that might be used with the code that’s
+/// using trait objects, so it doesn’t know which method implemented on which
+/// type to call. Instead, at runtime, _Rust uses the pointers inside the trait
+/// object to know which method to call_. This **lookup** incurs a _runtime
+/// cost_ that _doesn’t occur with static dispatch_. Dynamic dispatch also
+/// _prevents the compiler from choosing to inline a method’s code_, which in
+/// turn **prevents some optimizations**.
 ///
-/// However, we did get **extra flexibility** in the code, so it’s a trade-off to consider.
+/// However, we did get **extra flexibility** in the code, so it’s a trade-off
+/// to consider.
 
 fn oop2() {
     let components: Vec<Box<dyn gui::Draw>> = vec![
@@ -3241,18 +3277,21 @@ fn oop2() {
 ///  - Wildcards
 ///  - Placeholders
 ///
-///  Examples of patterns include `x`, `(a, 3)`, `Some(Color::Blue)`. In contexts which patterns
-///  are valid, these components describe the shape of data.
+///  Examples of patterns include `x`, `(a, 3)`, `Some(Color::Blue)`. In
+///  contexts which patterns are valid, these components describe the shape of
+///  data.
 ///
-///  We'll cover the valid places to use patterns, the difference between **refutable
-///  and irrefutable patterns**, and the different kinds of pattern syntax that you might see.
+///  We'll cover the valid places to use patterns, the difference between
+///  **refutable and irrefutable patterns**, and the different kinds of pattern
+///  syntax that you might see.
 ///
-///  One requirement of a `match` expression is that they need to be _exhaustive` in the
-///  sense that all possibilites for the value in the `match` expression must be accounted for.
+///  One requirement of a `match` expression is that they need to be
+///  _exhaustive` in the sense that all possibilites for the value in the
+///  `match` expression must be accounted for.
 ///
-///  The particular pattern `_` will match anything, but it never binds to a variable, so it's often
-///  used in the last match arm. The `_` pattern can be useful when you want to _ignore_ any value
-///  not specified.
+///  The particular pattern `_` will match anything, but it never binds to a
+///  variable, so it's often used in the last match arm. The `_` pattern can be
+///  useful when you want to _ignore_ any value not specified.
 
 fn patterns1() {
     fn iflet_cond(
@@ -3289,8 +3328,8 @@ fn patterns1() {
 
     iflet_while(&mut vec!['a', 'b', 'c']);
 
-    // In a `for` loop, the value that directly follows the keyword `for` is a pattern. For example
-    // `for x in y` the `x` is the pattern.
+    // In a `for` loop, the value that directly follows the keyword `for` is a
+    // pattern. For example `for x in y` the `x` is the pattern.
     let v = vec!['a', 'b', 'c'];
     for (index, value) in v.iter().enumerate() {
         print!("{}.{} ", index, value);
@@ -3310,18 +3349,23 @@ fn patterns1() {
 
 /// ## Refutability: Whether a Pattern Might Fail to Match
 ///
-/// Patterns come in two forms: **refutable** and **irrefutable**. Patterns that will match for any possible value
-/// passed are irrefutable. An example would be `x` in the statement `let x = 5;` because `x` matches anything and
-/// therefore cannot fail to match. Patterns that can fail to match for some possible value are refutable. Here are
-/// some examples:
+/// Patterns come in two forms: **refutable** and **irrefutable**. Patterns that
+/// will match for any possible value passed are irrefutable. An example would
+/// be `x` in the statement `let x = 5;` because `x` matches anything and
+/// therefore cannot fail to match. Patterns that can fail to match for some
+/// possible value are refutable. Here are some examples:
 ///
-///   - In the expression `if let Some(x) = a_value`, then `Some(x)` is refutable. If the value in the `a_value`
-///     variable is `None` rather than `Some`, the `Some(x)` pattern will not match.
-///   - In the expression `if let &[x, ..] = a_slice`, then `&[x, ..]` is refutable. If the value in the `a_slice`
-///     variable has zero elements, the `&[x, ..]` pattern will not match.
+///   - In the expression `if let Some(x) = a_value`, then `Some(x)` is
+///     refutable. If the value in the `a_value` variable is `None` rather than
+///     `Some`, the `Some(x)` pattern will not match.
 ///
-/// If we have a _refutable pattern_ where an _irrefutable pattern_ is needed, we can fix it by changing the code
-/// that uses the pattern: instead of using `let`, we can use `if let`.
+///   - In the expression `if let &[x, ..] = a_slice`, then `&[x, ..]` is
+///     refutable. If the value in the `a_slice` variable has zero elements, the
+///     `&[x, ..]` pattern will not match.
+///
+/// If we have a _refutable pattern_ where an _irrefutable pattern_ is needed,
+/// we can fix it by changing the code that uses the pattern: instead of using
+/// `let`, we can use `if let`.
 
 fn patterns2() {
     // let Some(x) = some_option_value; // won't compile
@@ -3537,12 +3581,16 @@ fn patterns3() {
 
     /// ### Ignoring Remaning Parts of a Value with ..
     ///
-    /// With values that have many parts, we can use the `..` syntax to use specific parts and ignore the rest, avoiding
-    /// the need to list underscores for each ignored value. The `..` pattern ignores any parts of a value that we haven’t
-    /// explicitly matched in the rest of the pattern.
+    /// With values that have many parts, we can use the `..` syntax to use
+    /// specific parts and ignore the rest, avoiding the need to list
+    /// underscores for each ignored value. The `..` pattern ignores any parts
+    /// of a value that we haven’t explicitly matched in the rest of the
+    /// pattern.
     ///
-    /// The syntax `..` will expand to as many values as it needs to be. However, using .. must be unambiguous. If it is
-    /// unclear which values are intended for matching and which should be ignored, Rust will give us an error.
+    /// The syntax `..` will expand to as many values as it needs to be.
+    /// However, using .. must be unambiguous. If it is unclear which values are
+    /// intended for matching and which should be ignored, Rust will give us an
+    /// error.
     fn ignore_value_parts() {
         struct Point {
             x: i32,
@@ -3567,8 +3615,10 @@ fn patterns3() {
 
     /// ### Extra Conditionals with Match Guards
     ///
-    /// A _match guard_ is an additional `if` condition, specified after the pattern in a `match` arm, that must also match
-    /// for that arm to be chosen. Match guards are useful for expressing more complex ideas than a pattern alone allows.
+    /// A _match guard_ is an additional `if` condition, specified after the
+    /// pattern in a `match` arm, that must also match for that arm to be
+    /// chosen. Match guards are useful for expressing more complex ideas than a
+    /// pattern alone allows.
     fn match_guards() {
         let num = Some(4);
         match num {
@@ -3598,8 +3648,8 @@ fn patterns3() {
 
     /// ### `@` Bindings
     ///
-    /// The at operator `@` lets us create a variable that holds a value at the same time as we’re testing that
-    /// value for a pattern match.
+    /// The at operator `@` lets us create a variable that holds a value at the
+    /// same time as we’re testing that value for a pattern match.
     fn at_bindings() {
         enum Message {
             Hello { id: i32 },
@@ -3607,8 +3657,8 @@ fn patterns3() {
 
         let msg = Message::Hello { id: 5 };
         match msg {
-            // Test that a `Message::Hello` `id` field is within the range `3..=7` and bind the value to the
-            // variable `id_variable`.
+            // Test that a `Message::Hello` `id` field is within the range
+            // `3..=7` and bind the value to the variable `id_variable`.
             Message::Hello {
                 id: id_variable @ 3..=7,
             } => println!("Found an id in range: {}", id_variable),
