@@ -20,7 +20,6 @@ Building
 
 ``` sh
 cargo build
-cargo build --examples
 ```
 
 Running
@@ -45,6 +44,14 @@ Examples
 ``` sh
 cargo run --example
 cargo run --example <example>
+```
+
+Documentation
+-------------
+
+```sh
+cargo doc
+cargo doc open
 ```
 
 Development
