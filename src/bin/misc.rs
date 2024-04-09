@@ -1566,63 +1566,60 @@ fn closure6() {
         .unwrap();
 }
 
-// A closure body can do any of the following: move a captured
-// value out of the closure, mutate the captured value, neither
-// move nor mutate the value, or capture nothing from the
-// environment to begin with.
+/// A closure body can do any of the following: move a captured
+/// value out of the closure, mutate the captured value, neither
+/// move nor mutate the value, or capture nothing from the
+/// environment to begin with.
 
-// The way a closure captures and handles values from the environment
-// affects which traits the closure implements, and traits are how
-// functions and structs can specify what kinds of closures they can use.
-//
-// Closures will automatically implement one, two, or all three of
-// these Fn traits, in an additive fashion, depending on how the
-// closure’s body handles the values:
-//
-//   - `FnOnce` applies to a closure that can be called once. All
-//     closures implement at least this trait, because all closures
-//     can be called. Closures that move captured values out of its body
-//     will only implement `FnOnce` and none of the other Fn traits,
-//     because it can only be called once.
-//
-//   - `FnMut` applies to closures that don't move captured values out of
-//     their body, but that might mutate the captured values. These closures
-//     can be called more than once.
-//
-//   - `Fn` applies to closures that don't move captured values out of
-//     their body and that don't mutate captured values, as well as
-//     closures that capture nothing from their environment. These closures
-//     can be called more than once without mutating their environment,
-//     which is important in cases such as calling a closure multiple times
-//     concurrently.
-
-use std::option::Option;
-
-struct MyOption<T>(Option<T>);
-
-impl<T> MyOption<T> {
-    pub fn unwrap_or_else<F>(self, f: F) -> T
-    where
-        F: FnOnce() -> T, // a function that can be called once, with no
-                          // arguments, and returns a value of type T.
-    {
-        match self {
-            MyOption(Some(x)) => x,
-            MyOption(None) => f(),
-        }
-    }
-}
+/// The way a closure captures and handles values from the environment
+/// affects which traits the closure implements, and traits are how
+/// functions and structs can specify what kinds of closures they can use.
+///
+/// Closures will automatically implement one, two, or all three of
+/// these Fn traits, in an additive fashion, depending on how the
+/// closure’s body handles the values:
+///
+///   - `FnOnce` applies to a closure that can be called once. All
+///     closures implement at least this trait, because all closures
+///     can be called. Closures that move captured values out of its body
+///     will only implement `FnOnce` and none of the other Fn traits,
+///     because it can only be called once.
+///
+///   - `FnMut` applies to closures that don't move captured values out of
+///     their body, but that might mutate the captured values. These closures
+///     can be called more than once.
+///
+///   - `Fn` applies to closures that don't move captured values out of
+///     their body and that don't mutate captured values, as well as
+///     closures that capture nothing from their environment. These closures
+///     can be called more than once without mutating their environment,
+///     which is important in cases such as calling a closure multiple times
+///     concurrently.
 
 fn closure7() {
+    struct MyOption<T>(Option<T>);
+
+    impl<T> MyOption<T> {
+        pub fn unwrap_or_else<F>(self, f: F) -> T
+        where
+            F: FnOnce() -> T, // a function that can be called once, with no
+                              // arguments, and returns a value of type T.
+        {
+            match self {
+                MyOption(Some(x)) => x,
+                MyOption(None) => f(),
+            }
+        }
+    }
     let o1 = MyOption(Some(3)).unwrap_or_else(|| 0);
     let o2 = MyOption(None).unwrap_or_else(|| 0);
 
     println!("{} {}", o1, o2);
 }
 
-// Now let’s look at the standard library method sort_by_key defined on slices,
-// to see how that differs from unwrap_or_else and why sort_by_key uses FnMut
-// instead of FnOnce for the trait bound.
+/// Now let’s look at the standard library method `sort_by_key` defined on
+/// slices, to see how that differs from `unwrap_or_else` and why `sort_by_key`
+/// uses `FnMut` instead of `FnOnce` for the trait bound.
 
 fn closure8() {
     let mut list = [
@@ -1659,9 +1656,9 @@ fn closure8() {
     println!("{:?}", list);
 }
 
-// In contrast, the code below (Listing 13-8) shows an example of a closure that
-// implements just the FnOnce trait, because it moves a value out of the environment.
-// The compiler won’t let us use this closure with `sort_by_key`:
+/// In contrast, the code below shows an example of a closure that implements
+/// just the `FnOnce` trait, because it moves a value out of the environment. The
+/// compiler won’t let us use this closure with `sort_by_key`:
 
 fn closure9() {
     let mut list = [
@@ -1693,12 +1690,12 @@ fn closure9() {
     println!("{:?} {} -> {:?}", list, value, sort_operations);
 }
 
-// Note: Functions can implement all three of the `Fn` traits too.
-// If what we want to do doesn’t require capturing a value from the environment,
-// we can use the name of a function rather than a closure where we need something
-// that implements one of the `Fn` traits. For example, on an `Option<Vec<T>>`
-// value, we could call `unwrap_or_else(Vec::new)` to get a new, empty vector if
-// the value is `None`.
+/// Note: Functions can implement all three of the `Fn` traits too. If what we
+/// want to do doesn’t require capturing a value from the environment, we can use
+/// the name of a function rather than a closure where we need something that
+/// implements one of the `Fn` traits. For example, on an `Option<Vec<T>>` value,
+/// we could call `unwrap_or_else(Vec::new)` to get a new, empty vector if the
+/// value is `None`.
 
 fn closure10() {
     let v1: Vec<i32> = None.unwrap_or_else(Vec::new);
@@ -1715,8 +1712,8 @@ fn closure10() {
 //     move || s_ref.to_string()
 // }
 //
-// What does it mean? What is a hidden type? Why does it capture a lifetime? Why does
-// that lifetime need to appear in a bound?
+// What does it mean? What is a hidden type? Why does it capture a lifetime? Why
+// does that lifetime need to appear in a bound?
 //
 // Let's see what would happen if Rust allowed the above code to compile.
 //
@@ -1959,10 +1956,10 @@ fn iter10() {
     println!("prediction = {:?}", &buffer[0..16]);
 }
 
-/// Smart pointers implement the `Deref` and `Drop` traits. The `Deref` trait allows an instance
-/// to behave like a reference so you can write your code to work with either references or
-/// smart pointers. The `Drop` trait allows you to customize the code that's run when an instance
-/// goes out of scope.
+/// Smart pointers implement the `Deref` and `Drop` traits. The `Deref` trait
+/// allows an instance to behave like a reference so you can write your code to
+/// work with either references or smart pointers. The `Drop` trait allows you
+/// to customize the code that's run when an instance goes out of scope.
 ///
 /// The most common smart pointers in the standard library:
 ///   - `Box<T>`: for allocating values on the heap.
@@ -1970,13 +1967,13 @@ fn iter10() {
 ///   - `Ref<T>` and `RefMut<T>`: accessed through `RefCell<T>`, a type that enforces the borrowing
 ///     rules at runtime instead of compile time.
 ///
-/// In addition, we’ll cover the **interior mutability pattern** where an immutable type exposes an
-/// API for mutating an interior value. We’ll also discuss reference cycles: how they can leak
-/// memory and how to prevent them.
+/// In addition, we’ll cover the **interior mutability pattern** where an
+/// immutable type exposes an API for mutating an interior value. We’ll also
+/// discuss reference cycles: how they can leak memory and how to prevent them.
 ///
-/// Boxes don’t have performance overhead, other than storing their data on the heap instead of on
-/// the stack. But they don’t have many extra capabilities either. You’ll use them most often in
-/// these situations:
+/// Boxes don’t have performance overhead, other than storing their data on the
+/// heap instead of on the stack. But they don’t have many extra capabilities
+/// either. You’ll use them most often in these situations:
 ///
 ///   - When you have a type whose size can’t be known at compile time and you want to use a value
 ///     of that type in a context that requires an exact size. For example, with values of
@@ -3380,6 +3377,17 @@ fn patterns2() {
 
     let x: &[(i32, i32)] = &[(0, 1)];
     println!("{:?}", x);
+
+    let a = [(0, 1)];
+    let [(n, ..)] = a;
+    let _ = a;
+    let [..] = a;
+
+    let p = Point { x: 5, y: -4 };
+    match p {
+        Point { x: x @ 0..=5, y } if x + y != 0 => println!("0-5 such that x+y != 0."),
+        _ => println!("something else"),
+    }
 }
 
 /// ## Pattern Syntax
@@ -3568,7 +3576,6 @@ fn patterns3() {
         if let Some(_s) = s {
             println!("found a string");
         }
-        println!("{:?}", s);
 
         let s = Some(String::from("Hello!"));
         if let Some(_) = s {
@@ -3670,6 +3677,725 @@ fn patterns3() {
     }
 
     at_bindings();
+}
+
+use std::slice;
+
+/// # Unsafe Superpowers
+///
+/// To switch to unsafe Rust, use the `unsafe` keyword and then start a new
+/// block that holds the unsafe code. You can take five actions in unsafe Rust
+/// that you can’t in safe Rust, which we call unsafe superpowers. Those
+/// superpowers include the ability to:
+///
+///  - Dereference a raw pointer
+///  - Call an unsafe function or method
+///  - Access or modify a mutable static variable
+///  - Implement an unsafe trait
+///  - Access fields of unions
+///
+/// It’s important to understand that `unsafe` **doesn’t turn off the borrow
+/// checker** or disable any other of Rust’s safety checks: if you use a
+/// reference in `unsafe` code, it will still be checked. The `unsafe` keyword
+/// only gives you access to these **five features** that are then not checked
+/// by the compiler for memory safety. You’ll still get some degree of safety
+/// inside of an unsafe block.
+///
+/// ## Dereferencing a Raw Pointer
+///
+/// Unsafe Rust has two new types called **raw pointers** that are similar to
+/// references. As with references, raw pointers can be _immutable_ or _mutable_
+/// and are written as `*const T` and `*mut T`, respectively. The asterisk
+/// **isn’t the dereference operator**; it’s _part of the type name_. In the
+/// context of raw pointers, _immutable_ means that the pointer can’t be
+/// directly assigned to after being dereferenced.
+///
+/// Different from references and smart pointers, raw pointers:
+///
+///  - Are allowed to ignore the borrowing rules by having both immutable and
+///    mutable pointers or multiple mutable pointers to the same location
+///  - Aren’t guaranteed to point to valid memory
+///  - Are allowed to be null
+///  - Don’t implement any automatic cleanup
+///
+/// ## Calling an Unsafe Function or Method
+///
+/// The second type of operation you can perform in an unsafe block is calling
+/// unsafe functions. Unsafe functions and methods look exactly like regular
+/// functions and methods, but they have an extra `unsafe` before the rest of
+/// the definition. The `unsafe` keyword in this context indicates the function
+/// has requirements we need to uphold when we call this function, because Rust
+/// can’t guarantee we’ve met these requirements. Bodies of unsafe functions are
+/// effectively unsafe blocks, so to perform other unsafe operations within an
+/// unsafe function, we don’t need to add another unsafe block.
+///
+/// ## Accessing or Modifying a Mutable Static Variable
+///
+/// In this book, we’ve not yet talked about global variables, which Rust does
+/// support but can be problematic with Rust’s ownership rules. If two threads
+/// are accessing the same mutable global variable, it can cause a data race.
+///
+/// A subtle difference between _constants_ and _immutable static variables_ is
+/// that values in a static variable have a **fixed address** in memory. Using
+/// the value will always access the same data. Constants, on the other hand,
+/// are allowed to duplicate their data whenever they’re used. Another
+/// difference is that static variables can be mutable. Accessing and modifying
+/// mutable static variables is unsafe. With mutable data that is globally
+/// accessible, it’s difficult to ensure there are no data races, which is why
+/// Rust considers mutable static variables to be unsafe.
+///
+/// ## Implementing an Unsafe Trait
+///
+/// We can use `unsafe` to implement an unsafe trait. A trait is unsafe when at
+/// least one of its methods has some invariant that the compiler can't verify.
+/// We declare that a trait is unsafe by adding the `unsafe` keyword before
+/// trait and marking the implementation of the trait as `unsafe` too.
+///
+/// If we implement a type that contains a type that is not `Send` or `Sync`,
+/// such as raw pointers, and we want to mark that type as `Send` or `Sync`, we
+/// must use `unsafe`.
+///
+/// ## Accessing fields of a Union
+///
+/// The final action that works only with unsafe is accessing fields of a union.
+/// A union is similar to a struct, but only one declared field is used in a
+/// particular instance at one time. Unions are primarily used to interface with
+/// unions in C code. Accessing union fields is unsafe because Rust can’t
+/// guarantee the type of the data currently being stored in the union instance.
+
+fn unsafe1() {
+    // ## Dereferencing a Raw Pointer
+    //
+    // Notice we don't include the `unsafe` keyword in the lines below. We can
+    // create raw pointers in safe code; we just can't dereference raw pointers
+    // outside an `unsafe` block.
+    //
+    // We create raw pointers by using `as` to cast an immutable and a mutable
+    // reference into their corresponding raw pointer types. Because we created
+    // them directly from references guaranteed to be valid, we know these
+    // particular raw pointers are valid, but we can’t make that assumption
+    // about just any raw pointer.
+    let mut num = 5;
+    let r1 = &num as *const i32;
+    let r2 = &mut num as *mut i32;
+
+    // Next we’ll create a raw pointer whose validity we can’t be so certain of.
+    // Usually, there is no good reason to write code like this, but it is
+    // possible.
+    let address = 0x012345usize;
+    let _r = address as *const i32;
+
+    // Creating a pointer does no harm; it’s only when we try to access the
+    // value that it points at that we might end up dealing with an invalid
+    // value. To dereference we need an `unsafe` block.
+    unsafe {
+        println!("r1 is: {}", *r1);
+        println!("r2 is: {}", *r2);
+    }
+    println!("r2 is: {}", unsafe { *r2 });
+
+    let mut v = Vec::with_capacity(4);
+    for i in 0..3 {
+        v.push(i);
+    }
+    let n = &v[0] as *const i32;
+    v.push(4);
+    println!("v[0] = n = {}", unsafe { *n });
+
+    // ## Calling an Unsafe Function or Method
+    unsafe fn dangerous() {}
+    unsafe {
+        dangerous();
+    }
+
+    // ### Creating a Safe Abstraction over Unsafe Code
+    fn split_as_mut(values: &mut [i32], mid: usize) -> (&mut [i32], &mut [i32]) {
+        let len = values.len();
+        let ptr = values.as_mut_ptr();
+        assert!(mid <= len);
+        unsafe {
+            (
+                slice::from_raw_parts_mut(ptr, mid),
+                slice::from_raw_parts_mut(ptr.add(mid), len - mid),
+            )
+        }
+    }
+
+    let mut v = vec![1, 2, 3, 4, 5, 6];
+    let r = &mut v[..];
+    let (a, b) = split_as_mut(r, 3);
+    assert_eq!(a, &mut [1, 2, 3]);
+    assert_eq!(b, &mut [4, 5, 6]);
+    println!("{:?} {:?}", a, b);
+
+    // Creating a slice from an arbitrary memory location.
+    let address = 0x01234usize;
+    let r = address as *mut i32;
+    let _values: &[i32] = unsafe { slice::from_raw_parts_mut(r, 10000) };
+
+    // ### Using `extern` Functions to Call External Code
+    extern "C" {
+        fn abs(input: i32) -> i32;
+    }
+    unsafe {
+        println!("abs value of -3 according to C: {}", abs(-3));
+    }
+
+    // Accessing and changing global variables.
+    println!("name is: {}", HELLO_WORLD);
+
+    fn add_to_count(inc: u32) {
+        unsafe {
+            COUNTER += inc;
+        }
+    }
+
+    add_to_count(3);
+    unsafe {
+        println!("counter: {}", COUNTER);
+    }
+
+    // ### Defining and implementing an unsafe trait.
+    //
+    // By using unsafe impl, we’re promising that we’ll uphold the invariants
+    // that the compiler can’t verify.
+    unsafe trait Foo {
+        // methods go here
+    }
+    unsafe impl Foo for i32 {
+        // method implementations go here
+    }
+}
+
+// In Rust, global variables are called static variables. The names of static
+// variables are in `SCREAMING_SNAKE_CASE` by convention.
+static HELLO_WORLD: &str = "Hello, world.";
+
+static mut COUNTER: u32 = 0;
+
+/// Besides using `extern` to call ABI it's also possible to use it to create an
+/// interface that allows other languages to call Rust functions. Istead of
+/// creating a while `extern` block, we add the `extern` keyword and specify the
+/// ABI to use just before `fn` keyword for the relevant function. We also need
+/// to add a `#[no_mangle]` annotation to tell the Rust compiler not to mangle
+/// the name of this function.
+///
+/// This usage of extern does not require unsafe.
+
+#[no_mangle]
+pub extern "C" fn call_from_c() {
+    println!("just called a Rust function from C.");
+}
+
+use std::ops::Add;
+
+/// # Advanced Traits
+///
+/// ## Specifying Placeholder Types in Trait Definitions with Associated Types
+///
+/// Associated types connect a type placeholder with a trait such that the trait
+/// method definitions can use these placeholder types in their signatures.
+///
+/// ## Default Generic Type Parameters and Operator Overloading
+///
+/// When we use generic type parameters, we can specify a default concrete type
+/// for the generic type. This eliminates the need for implementors of the trait
+/// to specify a concrete type if the default type works. You specify a default
+/// type when declaring a generic type with the `<PlaceholderType=ConcreteType>`
+/// syntax.
+///
+/// A great example of a situation where this technique is useful is with
+/// _operator overloading_, in which you customize the behavior of an operator
+/// (such as `+`) in particular situations.
+///
+/// This code should look generally familiar: a trait with one method and an
+/// associated type. The new part is `Rhs=Self:` this syntax is called _default
+/// type parameters_.
+/// ```
+/// trait Add<Rhs=Self> {
+///    type Output;
+///
+///    fn add(self, rhs: Rhs) -> Self::Output;
+/// }
+/// ```
+/// Rust doesn’t allow you to create your own operators or overload arbitrary
+/// operators. But you can overload the operations and corresponding traits
+/// listed in `std::ops` by implementing the traits associated with the
+/// operator.
+///
+/// ## Fully Qualified Syntax for Disambiguation: Calling Methods with the Same Name
+///
+/// Nothing in Rust prevents a trait from having a method with the same name as
+/// another trait’s method, nor does Rust prevent you from implementing both
+/// traits on one type. It’s also possible to implement a method directly on the
+/// type with the same name as methods from traits.
+///
+/// In general, fully qualified syntax is defined as follows:
+/// - `<Type as Trait>::function(receiver_if_method, next_arg, ...);`
+///
+/// You could use fully qualified syntax everywhere that you call functions or
+/// methods.
+///
+/// ## Using Supertraits to Require One Trait's Functionality Within Another Trait
+///
+/// Sometimes, you might write a trait definition that depends on another trait:
+/// for a type to implement the first trait, you want to require that type to
+/// also implement the second trait. The trait your trait definition is relying
+/// on is called a _supertrait_ of your trait. (See the `OutlinePrint` trait
+/// implementation below)
+///
+/// ## Using the Newtype Pattern to Implement External Traits on External Types
+///
+/// Previously we mentioned the orphan rule that states we’re only allowed to
+/// implement a trait on a type if either the trait or the type are local to our
+/// crate. It’s possible to get around this restriction using the _newtype
+/// pattern_, which involves creating a new type in a tuple struct.
+///
+/// The tuple struct will have one field and be a thin wrapper around the type
+/// we want to implement a trait for. Then the wrapper type is local to our
+/// crate, and we can implement the trait on the wrapper. Newtype is a term that
+/// originates from the Haskell programming language. There is no runtime
+/// performance penalty for using this pattern, and the wrapper type is elided
+/// at compile time. (see `Wrapper` type definition below)
+
+fn advanced_traits1() {
+    pub trait Iterator {
+        type Item;
+
+        fn next(&mut self) -> Option<Self::Item>;
+    }
+
+    struct Counter {
+        count: u32,
+    }
+
+    impl Iterator for Counter {
+        type Item = u32;
+        fn next(&mut self) -> Option<Self::Item> {
+            Some(self.count + 1)
+        }
+    }
+
+    // We can overload the `+` operator to add two `Point` instances together. We do
+    // this by implementing the `Add` trait on a `Point` struct:
+    #[derive(Debug, Copy, Clone, PartialEq)]
+    struct Point {
+        x: i32,
+        y: i32,
+    }
+
+    impl Add for Point {
+        type Output = Point;
+
+        fn add(self, other: Point) -> Point {
+            Point {
+                x: self.x + other.x,
+                y: self.y + other.y,
+            }
+        }
+    }
+
+    assert_eq!(
+        Point { x: 1, y: 0 } + Point { x: 2, y: 3 },
+        Point { x: 3, y: 3 }
+    );
+
+    struct Millimeters(u32);
+    struct Meters(u32);
+
+    // To add `Millimeters` and `Meters`, we specify `impl Add<Meters>` to set
+    // the value of the `Rhs` type parameter instead of using the default of
+    // `Self`.
+    impl Add<Meters> for Millimeters {
+        type Output = Millimeters;
+
+        fn add(self, other: Meters) -> Millimeters {
+            Millimeters(self.0 + (other.0 * 1000))
+        }
+    }
+
+    // Disambiguation: Calling methods with the same name.
+    trait Pilot {
+        fn fly(&self);
+    }
+
+    trait Wizard {
+        fn fly(&self);
+    }
+
+    struct Human;
+
+    impl Pilot for Human {
+        fn fly(&self) {
+            println!("This is your captain speaking.");
+        }
+    }
+
+    impl Wizard for Human {
+        fn fly(&self) {
+            println!("Up!");
+        }
+    }
+
+    impl Human {
+        fn fly(&self) {
+            println!("*waving arms furiously*");
+        }
+    }
+
+    let person = Human;
+    Pilot::fly(&person);
+    Wizard::fly(&person);
+    person.fly();
+
+    // However, associated functions that are not methods don’t have a self
+    // parameter. When there are multiple types or traits that define non-method
+    // functions with the same function name, Rust doesn't always know which
+    // type you mean unless you use _fully qualified syntax_.
+    trait Animal {
+        fn baby_name() -> String;
+    }
+
+    struct Dog;
+
+    impl Dog {
+        fn baby_name() -> String {
+            String::from("Spot")
+        }
+    }
+
+    impl Animal for Dog {
+        fn baby_name() -> String {
+            String::from("puppy")
+        }
+    }
+
+    println!("A baby dog is called a {}", Dog::baby_name());
+    // Use fully qualified syntax to specify that we want to call the
+    // baby_name function from the Animal trait as implemented on Dog
+    println!("A baby dog is called a {}", <Dog as Animal>::baby_name());
+
+    // Using Supertraits to Require One Trait’s Functionality Within Another Trait
+    trait OutlinePrint: fmt::Display {
+        fn outline_print(&self) {
+            // If we tried to use `to_string` without adding a colon and
+            // specifying the `Display` trait after the trait name, we’d get an
+            // error saying that no method named to_string was found for the
+            // type `&Self` in the current scope.
+            let output = self.to_string();
+            let len = output.len();
+            println!("{}", "*".repeat(len + 4));
+            println!("*{}*", " ".repeat(len + 2));
+            println!("* {} *", output);
+            println!("*{}*", " ".repeat(len + 2));
+            println!("{}", "*".repeat(len + 4));
+        }
+    }
+
+    // Since `OutlinePrint` needs the type to implement `fmt::Display`:
+    impl fmt::Display for Point {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            write!(f, "({}, {})", self.x, self.y)
+        }
+    }
+
+    // Now we can safely implement `OutlinePrint` for `Point`.
+    impl OutlinePrint for Point {}
+
+    let p = Point { x: 1, y: 2 };
+    println!("{}", p);
+    p.outline_print();
+
+    // Using the Newtype Pattern to Implement External Traits on External Types
+    //
+    // As an example, let’s say we want to implement `Display` on `Vec<T>`,
+    // which the orphan rule prevents us from doing directly because the
+    // `Display` trait and the `Vec<T>` type are defined outside our crate. We
+    // can make a Wrapper struct that holds an instance of `Vec<T>;` then we can
+    // implement `Display` on `Wrapper` and use the `Vec<T>` value.
+    //
+    // The downside of using this technique is that Wrapper is a new type, so it
+    // doesn’t have the methods of the value it’s holding.
+    struct Wrapper(Vec<String>);
+    impl fmt::Display for Wrapper {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            write!(f, "[{}]", self.0.join(", "))
+        }
+    }
+
+    let w = Wrapper(vec![String::from("hello"), String::from("world")]);
+    println!("w = {}", w);
+}
+
+/// ## Combining implementations with `use`.
+fn advanced_traits2() {
+    mod inner {
+        pub trait A {
+            fn f(&self) -> usize {
+                0
+            }
+        }
+        pub trait B {
+            fn f(&self) -> usize {
+                1
+            }
+        }
+        pub struct P;
+        impl A for P {}
+        impl B for P {}
+    }
+    {
+        use inner::{A, P};
+        println!("{}", P.f());
+    }
+    {
+        use inner::{B, P};
+        println!("{}", P.f());
+    }
+}
+
+/// # Advanced Types
+///
+/// ## Creating Type Synonyms with Type Aliases
+///
+/// Rust provides the ability to declare a _type alias_ to give an existing type
+/// another name.
+///
+/// The main use case for type synonyms is to reduce repetition. For example, we
+/// might have a lengthy type like `Box<dyn Fn() + Send + 'static>`, and use a
+/// _type alias_ to shorten it like this:
+/// ```
+/// type Thunk = Box<dyn Fn() + Send + 'static>;
+/// let f: Thunk = Box::new(|| println!("hi"));
+/// ```
+/// Type aliases are also commonly used with the `Result<T, E>` type for
+/// reducing repetition. Consider the `std::io` module in the standard library.
+/// I/O operations often return a `Result<T, E>` to handle situations when
+/// operations fail to work. This library has a `std::io::Error` struct that
+/// represents all possible I/O errors. Many of the functions in `std::io` will
+/// be returning `Result<T, E>` where the `E` is `std::io::Error`.
+///
+/// The `Result<..., Error>` is repeated a lot. As such, `std::io` has this type
+/// alias declaration:
+/// ```
+/// type Result<T> = std::result::Result<T, std::io::Error>;
+/// ```
+/// Because this declaration is in the `std::io` module, we can use the fully
+/// qualified alias `std::io::Result<T>;` that is, a `Result<T, E>` with the `E`
+/// filled in as `std::io::Error`.
+///
+/// ## The Never Type that Never Returns
+///
+/// Rust has a special type named `!` that’s known in type theory lingo as the
+/// _empty type_ because it has no values. We prefer to call it the **never
+/// type** because it stands in the place of the return type when a function
+/// will never return. Here is an example:
+/// ```
+/// fn bar() -> ! {
+///    // --snip--
+/// }
+/// ```
+/// This code is read as “the function `bar` returns never.” Functions that return
+/// never are called _diverging functions_. We can’t create values of the type
+/// `!` so `bar` can never possibly return.
+///
+/// Remember all `match` arms must return the same type? With `!` you can create
+/// arms that behaves "differently", such as:
+/// ```
+///   let guess: u32 = match guess.trim().parse() {
+///       Ok(num) => num,
+///       Err(_) => continue, // continue has type `!`.
+///   };
+/// ```
+/// The formal way of describing this behavior is that expressions of type `!` can
+/// be coerced into any other type.
+///
+/// Another example, `panic!` has the type `!`:
+/// ```
+/// impl<T> Option<T> {
+///     pub fn unwrap(self) -> T {
+///         match self {
+///             Some(val) => val,
+///             None => panic!("called `Option::unwrap()` on a `None` value"),
+///         }
+///     }
+/// }
+/// ```
+/// One final expression that has the type `!` is a `loop`:
+/// ```
+/// print!("forever ");
+///
+///    loop {
+///        print!("and ever ");
+///    }
+/// ```
+/// Because the loop never ends, `!` is the type of the expression. However this
+/// wouldn't be true if we included a `break`, because the loop would terminate
+/// when it got to the `break`.
+///
+/// ## Dynamically Sized Types and The `Sized` Trait
+///
+/// Rust needs to know certain details about its types, such as how much space
+/// to allocate for a value of a particular type. This leaves one corner of its
+/// type system a little confusing at first: the concept of _dynamically sized
+/// types_. Sometimes referred to as DSTs or unsized types, these types let us
+/// write code using values whose size we can know only at runtime.
+///
+/// Rust needs to know how much memory to allocate for any value of a particular
+/// type, and all values of a type must use the same amount of memory.
+///
+/// For instance, the size of `str` cannot be known at compile time, while the
+/// size of `&str` is well known: twice the size of `usize`, since it holds a
+/// pointer and a length.
+///
+/// The golden rule of dynamically sized types is that we must always _put
+/// values of dynamically sized types behind a pointer_ of some kind. We can
+/// combine `str` with all kinds of pointers: for example, `Box<str>` or
+/// `Rc<str>`.
+///
+/// Every trait is a dynamically sized type we can refer to by using the name of
+/// the trait. We can use traits as trait objects. We must put them behind a
+/// pointer, such as `&dyn Trait` or `Box<dyn Trait>` (`Rc<dyn Trait>` would
+/// work too).
+///
+/// To work with DSTs, Rust provides the `Sized` trait to determine whether or
+/// not a type’s size is known at compile time. In addition, Rust implicitly
+/// adds a bound on `Sized` to _every generic function_. That is, a generic
+/// function definition like this:
+/// ```
+/// fn generic1<T>(t: T) {}
+/// ```
+/// is actually treated as though we had written this:
+/// ```
+/// fn generic1<T: Sized>(t: T) {}
+/// ```
+/// By default, generic functions will work only on types that have a known size
+/// at compile time. However, you can use the following special syntax to relax
+/// this restriction:
+/// ```
+/// fn generic3<T: ?Sized>(t: &T) {}
+/// ```
+/// A trait bound on `?Sized` means “T may or may not be Sized” and this
+/// notation overrides the default that generic types must have a known size at
+/// compile time. The `?Trait` syntax with this meaning is only available for
+/// `Sized`, not any other traits.
+///
+/// Also note that we switched the type of the `t` parameter from `T` to `&T`.
+/// Because the type might not be `Sized`, we need to use it behind some kind of
+/// pointer. In this case, we’ve chosen a reference.
+
+fn advanced_types1() {
+    // Type aliases.
+    type _Kilometers = i32;
+
+    type Thunk = Box<dyn Fn() + Send + 'static>;
+    let _f: Thunk = Box::new(|| println!("hi"));
+
+    type _Result<T> = std::result::Result<T, std::io::Error>;
+
+    // Never type.
+    fn expect_none(x: Option<i32>) -> ! {
+        match x {
+            Some(n) => panic!("expected none, found some({n})"),
+            None => unreachable!(),
+        }
+    }
+
+    // Dynamically sized types.
+    let _s0: &str = "foo";
+    let _s1: Box<str>;
+    let _s2: Rc<str>;
+
+    // Sized trait.
+    fn generic1<T>(_: T) {}
+    fn generic2<T: Sized>(_: T) {}
+    fn generic3<T: ?Sized>(_: &T) {}
+
+    fn is_equal<T: Eq>(t1: &T, t2: &T) -> bool {
+        t1 == t2
+    }
+    println!(
+        "{}",
+        is_equal(&String::from("hello"), &String::from("world"))
+    );
+}
+
+/// # Advanced Functions and Closures
+///
+/// This section explores some advanced features related to functions and
+/// closures, including _function pointers_ and _returning closures_.
+///
+/// ## Function Pointers
+///
+/// We’ve talked about how to pass closures to functions; you can also pass
+/// regular functions to functions!
+///
+/// Functions coerce to the type `fn` (with a lowercase `f`), not to be confused
+/// with the `Fn` closure trait. The `fn` type is called a _function pointer_.
+/// Unlike closures, `fn` is a _type_ rather than a trait.
+///
+/// Function pointers implement _all three of the closure traits_ (`Fn`,
+/// `FnMut`, and `FnOnce`), meaning you can always pass a function pointer as an
+/// argument for a function that expects a closure.
+///
+/// It’s best to write functions using a _generic type_ and _one of the closure
+/// traits_ so your functions can accept _either functions or closures_. One
+/// exception is when interfacing with external code that doesn't have closures:
+/// C functions can accept functions as arguments, but C doesn't have closure.
+///
+/// ## Returning Closures
+///
+/// Closures are represented by traits, which means you can’t return closures
+/// directly. In most cases where you might want to return a trait, you can
+/// instead use the concrete type that implements the trait as the return type
+/// of the function. However, you can’t do that with closures because they don’t
+/// have a concrete type that is returnable.
+///
+/// If we try to return a closure directly we get an error referencing the
+/// `Sized` trait. Rust doesn't know how much space it will need to sore the
+/// closure. The work around this limitation we can wrap the return around a
+/// pointer, like a `Box<T>` for example, as we saw earlier in the "dynamic
+/// sized types" part.
+
+fn advanced_closure1() {
+    // The `fn` type for function pointers.
+    fn add_one(x: i32) -> i32 {
+        x + 1
+    }
+    fn do_twice(f: fn(i32) -> i32, arg: i32) -> i32 {
+        f(arg) + f(arg)
+    }
+    let answer1 = do_twice(add_one, 5);
+    let answer2 = do_twice(|x| x + 1, 5);
+
+    println!("{answer1}\n{answer2}");
+
+    // We could use a closure, like this:
+    let list_of_numbers = vec![1, 2, 3];
+    let _list_of_strings: Vec<String> = list_of_numbers.iter().map(|i| i.to_string()).collect();
+
+    // Or we could name a function as the argument to map instead of the closure, like this:
+    let list_of_numbers = vec![1, 2, 3];
+    let _list_of_strings: Vec<String> = // access `to_string` from `ToString` trait.
+        list_of_numbers.iter().map(ToString::to_string).collect();
+     // the standard lib has `ToString` implemented for any type that implements `Display`.
+
+    // We can use `enum` initializer functions as function pointers that
+    // implement the closure traits, which means we can specify the initializer
+    // functions as arguments for methods that take closures, like so:
+    enum Status {
+        Value(u32),
+        Stop,
+    }
+    let _list_of_statuses: Vec<Status> = (0u32..20).map(Status::Value).collect();
+
+    // Returning Closures
+    fn returns_closure() -> Box<dyn Fn(i32) -> i32> {
+        // returning a closure directly won't compile, but we can wrap it around a `Box`.
+        Box::new(|x| x + 1)
+    }
+    let x = returns_closure()(1);
+    println!("{x}");
 }
 
 fn main() {
@@ -4038,4 +4764,19 @@ fn main() {
 
     println!("-=- patterns3() -=-");
     patterns3();
+
+    println!("-=- unsafe1() -=-");
+    unsafe1();
+
+    println!("-=- advanced_traits1() -=-");
+    advanced_traits1();
+
+    println!("-=- advanced_traits2() -=-");
+    advanced_traits2();
+
+    println!("-=- advanced_types1() -=-");
+    advanced_types1();
+
+    println!("-=- advanced_closure1() -=-");
+    advanced_closure1();
 }
