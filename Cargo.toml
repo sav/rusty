@@ -1,6 +1,6 @@
 ## Cargo.toml, Jul/2022, Savio Sena <savio.sena@gmail.com>
 
-workspace = { members = ["./src/lib/macros_derive", "src/lib/macros"] }
+workspace = { members = ["./src/lib/macros_derive", "./src/lib/macros", "echo"] }
 
 [package]
 name = "rusty"

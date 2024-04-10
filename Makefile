@@ -1,6 +1,6 @@
 EXAMPLES := env1 error1 error2 error3 error4 error5 error6
 
-all: check lint test run-debug
+all: check lint test run-debug echo
 
 update:
 	cargo update
@@ -19,6 +19,10 @@ run:
 
 test:
 	cargo test
+
+.PHONY: echo
+echo:
+	cargo build --package echo
 
 %: examples/%.rs
 	@echo "~~~ $< ~~~"
