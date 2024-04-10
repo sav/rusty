@@ -1,4 +1,4 @@
-Rusty v0.1.4
+Rusty v0.1.5
 ============
 
 This repository contains a collection of **Rust code snippets** inspired by **The Rust Programming Language** book. The primary purpose of this repository is to serve as a **personal reference** for myself, helping me remember important concepts and techniques. The code might be a bit messy, and you'll eventually find some commented-out sections that serve as a reminder of how **not** to do things. But fear not! It could still be helpful for you to take a look at it, specially if you are short on time and won't go through the entire book
