@@ -1,6 +1,3 @@
-## TODO: add `cargo fmt --check`
-## TODO: add `cargo fix --bin "rusty"`
-
 EXAMPLES := env1 error1 error2 error3 error4 error5 error6
 
 all: check lint test run-debug
@@ -29,6 +26,14 @@ test:
 
 run-examples: $(EXAMPLES) /tmp/hello.txt
 
+.PHONY: fmt
+fmt:
+	cargo fmt
+
+.PHONY: fmt-check
+fmt-check:
+	cargo fmt --check
+
 .PHONY: examples
 examples:
 	cargo build --examples
@@ -41,6 +46,9 @@ lint-fix:
 
 lint-all:
 	cargo clippy --all-targets --all-features -- -D warnings
+
+fix:
+	cargo fix
 
 /tmp/hello.txt:
 	@echo ${USER} >> /tmp/hello.txt
