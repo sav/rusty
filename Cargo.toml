@@ -1,5 +1,7 @@
 ## Cargo.toml, Jul/2022, Savio Sena <savio.sena@gmail.com>
 
+workspace = { members = ["./src/lib/macros_derive", "src/lib/macros"] }
+
 [package]
 name = "rusty"
 version = "0.1.4"
@@ -11,10 +13,6 @@ readme = "README.md"
 homepage = "https://github.com/sav/rusty"
 keywords = ["learning", "snippets", "random"]
 publish = false
-
-[lib]
-name = "minigrep"
-path = "src/lib/minigrep.rs"
 
 [profile.release]
 ## abort on panic instead of unwinding the stack.
@@ -31,6 +29,16 @@ rand = "0.8.5"
 cargo-modules = "0.5.9"
 unicode-segmentation = "1.7.1"
 rust-analyzer = "0.0.1"
+macros = { path = "src/lib/macros" }
+macros_derive = { path = "src/lib/macros_derive" }
 
 [dev-dependencies]
 env_logger = "0.5"
+
+[[bin]]
+name = "rusty"
+path = "src/main.rs"
+
+[lib]
+name = "minigrep"
+path = "src/lib/minigrep.rs"

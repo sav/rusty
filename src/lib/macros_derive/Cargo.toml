@@ -1,0 +1,14 @@
+[package]
+name = "macros_derive"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+# The `proc_macro` crate is the compiler’s API that allows us to read and manipulate Rust code from our code.
+proc-macro = true
+
+[dependencies]
+# The `syn` crate parses Rust code from a string into a data structure that we can perform operations on.
+syn = "1.0"
+# The `quote` crate turns `syn` data structures back into Rust code.
+quote = "1.0"
