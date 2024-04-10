@@ -1,11 +1,12 @@
 EXAMPLES := env1 error1 error2 error3 error4 error5 error6
 
-all: check lint test run-debug echo
+all: build test doc
 
 update:
 	cargo update
 
-debug:
+.PHONY: build
+build: echo
 	cargo build
 
 check:
@@ -17,6 +18,7 @@ run-debug:
 run:
 	cargo run --release
 
+.PHONY: test
 test:
 	cargo test
 
@@ -60,8 +62,10 @@ fix:
 clean:
 	cargo clean
 
+.PHONY: doc
 doc:
-	cargo doc --open
+	cargo doc
+	cargo doc --package echo
 
 ##
 ## The commands below are merely illustrative.
