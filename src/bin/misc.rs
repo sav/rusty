@@ -2128,7 +2128,7 @@ fn smartptr3() {
 }
 
 /// **Deref coercion** converts a reference to a type that implements the
-/// [`Deref`] trait into a reference to another type. For example, [`&String`]
+/// [`Deref`] trait into a reference to another type. For example, `&String`
 /// to [`&str`] because [`String`] implements [`Deref`] such that it returns
 /// [`&str`].
 ///
