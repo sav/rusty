@@ -1,3 +1,6 @@
+// arrays.rs, Examples from the book "Rust by Example"
+// Copyright (C) 2024, Savio Sena <savio.sena@gmail.com>
+
 use std::mem;
 
 fn main() {
