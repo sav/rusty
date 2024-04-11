@@ -1503,3 +1503,5 @@ fn ex_lifetime_1() {
     println!("xpto_a = {}", s1.len());
     println!("xpto_b = {}", s2.len());
 }
+
+//  If you've arrived here, proceed to `bin/misc.rs`.
