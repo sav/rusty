@@ -1,5 +1,8 @@
-/// main.rs, Examples from the book "Rust Programming Language"
-/// Copyright (C) 2022, Savio Machado <sav@loophole.cc>
+// main.rs, Examples from the book "Rust Programming Language"
+// Copyright (C) 2022-2024, Savio Sena <savio.sena@gmail.com>
+
+#![allow(dead_code)]
+#![allow(unused_variables)]
 
 #[cfg(not(debug_assertions))]
 use rand::prelude::*;

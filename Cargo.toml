@@ -4,7 +4,7 @@ workspace = { members = ["./src/lib/macros_derive", "./src/lib/macros", "echo"] 
 
 [package]
 name = "rusty"
-version = "0.1.5"
+version = "0.1.6"
 edition = "2021"
 description = "A collection of code snippets and examples inspired by the Rust Programming Language book."
 repository = "git@github.com:sav/rusty.git"

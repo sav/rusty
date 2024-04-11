@@ -1,3 +1,6 @@
+// scratch.rs, Examples from the book "Rust Programming Language"
+// Copyright (C) 2024, Savio Sena <savio.sena@gmail.com>
+
 #[derive(Debug)]
 struct A1 {
     value: i32,

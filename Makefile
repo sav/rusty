@@ -1,4 +1,4 @@
-EXAMPLES := env1 error1 error2 error3 error4 error5 error6
+## Makefile, Copyright (C) 2024, Savio Sena <savio.sena@gmail.com>
 
 all: build test doc
 

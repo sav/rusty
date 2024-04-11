@@ -1,3 +1,6 @@
+// state2.rs, Examples from the book "Rust Programming Language"
+// Copyright (C) 2024, Savio Sena <savio.sena@gmail.com>
+
 /// ## Encoding States and Behavior as Types
 ///
 /// We’ll show you how to rethink the state pattern to get a different set of trade-offs. Rather than

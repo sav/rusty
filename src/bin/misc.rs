@@ -1,4 +1,8 @@
-// misc1.rs
+// misc.rs, Examples from the book "Rust Programming Language"
+// Copyright (C) 2024, Savio Sena <savio.sena@gmail.com>
+
+#![allow(dead_code)]
+#![allow(unused_variables)]
 
 // further examples form `the rust programming language`, but from this new
 // interactive version with quizzes: https://rust-book.cs.brown.edu

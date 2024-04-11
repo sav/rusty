@@ -1,3 +1,6 @@
+// minigrep.rs, Examples from the book "Rust Programming Language"
+// Copyright (C) 2022-2024, Savio Sena <savio.sena@gmail.com>
+
 //! The `minigrep` crate provides a simple command-line utility for searching text files.
 //!
 //! # Examples

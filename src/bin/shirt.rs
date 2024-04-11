@@ -1,3 +1,6 @@
+// shirt.rs, Examples from the book "Rust Programming Language"
+// Copyright (C) 2024, Savio Sena <savio.sena@gmail.com>
+
 #[derive(Debug, PartialEq, Copy, Clone)]
 enum ShirtColor {
     Red,

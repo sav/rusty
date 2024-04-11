@@ -1,3 +1,6 @@
+// state.rs, Examples from the book "Rust Programming Language"
+// Copyright (C) 2024, Savio Sena <savio.sena@gmail.com>
+
 //! # Implementing an Object-Oriented Design Pattern
 //!
 //! The state pattern is an object-oriented design pattern. The _crux_ of the pattern is that we

@@ -1,12 +1,12 @@
-Rusty v0.1.5
+Rusty v0.1.6
 ============
 
-This repository contains a collection of **Rust code snippets** inspired by **The Rust Programming Language** book. The primary purpose of this repository is to serve as a **personal reference** for myself, helping me remember important concepts and techniques. The code might be a bit messy, and you'll eventually find some commented-out sections that serve as a reminder of how **not** to do things. But fear not! It could still be helpful for you to take a look at it, specially if you are short on time and won't go through the entire book
-yourself.
+This repository contains a collection of **Rust code snippets** inspired by **The Rust Programming Language** book and a few other references (listed below). The primary purpose of this repository is to serve as a **personal reference**, helping me remember important concepts and techniques from both sources. The code might be a bit messy, and you'll eventually find some commented-out sections that serve as a reminder of how **not** to do things. But fear not! It could still be helpful for you to take a look at it, especially if you are short on time and won't go through the entire book yourself.
 
- * [The "Rust programming language" Book](https://doc.rust-lang.org/book)
+ * [The "Rust Programming Language" Book](https://doc.rust-lang.org/book)
+ * [Rust by Example](https://doc.rust-lang.org/stable/rust-by-example/)
 
- Also, there's a new version of the book with interactive quizzes available [here](https://rust-book.cs.brown.edu/).
+ There's an _alternative_ version of the "Rust Programming Language" book with _interactive quizzes_ available [here](https://rust-book.cs.brown.edu/).
 
 What's Inside?
 --------------
