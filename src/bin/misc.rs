@@ -4,8 +4,7 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
-// further examples form `the rust programming language`, but from this new
-// interactive version with quizzes: https://rust-book.cs.brown.edu
+//! Further examples form ["_The rust programming language_"](https://rust-book.cs.brown.edu).
 
 use core::slice::*;
 use std::any::type_name;
@@ -483,8 +482,8 @@ fn safearray1() {
                        // It uses a single path a[_] that presents all indexes of a. Rust does this because
                        // it cannot always determine the value of an index. For example, a more complex scenario:
                        //
-                       //   let idx = a_complex_function();
-                       //   let x = &mut a[idx];
+                       // let idx = a_complex_function();
+                       // let x = &mut a[idx];
 
     *x += 1;
     println!("{a:?}");
@@ -500,8 +499,8 @@ fn safearray2() {
 }
 
 // you might wonder how is how split_at_mut implemented? in some rust libs, especially
-// core types like Vec or slice, you'll often find `unsafe' blocks.
-// `unsafe' blocks allow the use of "raw" pointers, which are not checked for safety by the borrow
+// core types like Vec or slice, you'll often find `unsafe` blocks.
+// `unsafe` blocks allow the use of "raw" pointers, which are not checked for safety by the borrow
 // checker. for example, we could use an unsafe block to accomplish our task:
 
 fn safearray3() {
@@ -708,7 +707,7 @@ fn assocfunc3() {
             // that issue, API authors must explicitly add #[derive(Copy)] to indicate that they expect
             // their struct to always be Copy.
             //
-            // To illustrate, imagine we add a `name: String' to Rectangle and implement `set_to_max' as:
+            // To illustrate, imagine we add a `name: String` to Rectangle and implement `set_to_max' as:
             //
             // let max = self.max(other)
             // drop(*self); // usually implicit, added for clarity.
@@ -742,7 +741,7 @@ fn mutref1() {
     }
     let mut p: Point = Point(1, 2);
     let r: &mut Point = &mut p;
-    println!("{} {}", r.x(), r.1); // ok to call r.x(). &mut is implicitly converted to &.
+    println!("{} {}", r.x(), r.1); // OK to call `r.x()`. `&mut` is implicitly converted to `&`.
 }
 
 // Dereferencing a pointer access its data!
@@ -850,7 +849,7 @@ fn option4() {
 fn option5() {
     let s: Option<String> = Some(String::from("hello world"));
     match s {
-        Some(_) => println!("Some"), // replacing Some(_) with Some(s) will crash the compiler.
+        Some(_) => println!("Some"), // replacing `Some(_)` with `Some(s)` will crash the compiler.
         None => println!("None"),
     };
     match &s {
@@ -1052,7 +1051,7 @@ fn str1() {
 fn str2() {
     // Rust strings does not support indexing.
     let s1 = String::from("hello");
-    // String is a wrapper over a Vec<u8>.
+    // `String` is a wrapper over a `Vec<u8>`.
     let s2 = String::from("Здравствуйте"); // 12 glyphs, 24 bytes.
     let s3 = "नमस्ते".to_string();
     println!("{} {} {}", s1.len(), s2.len(), s3.len());
@@ -1074,13 +1073,14 @@ impl<T, U> Point<T, U> {
     }
 }
 
-// You might be wondering whether there is a runtime cost when using generic type parameters.
-// The good news is that using generic types won't make your program run any slower than it
-// would with concrete types.
-
-// Rust accomplishes this by performing monomorphization of the code using generics at compile time.
-// Monomorphization is the process of turning generic code into specific code by filling in the
-// concrete types that are used when compiled.
+/// You might be wondering whether there is a runtime cost when using generic
+/// type parameters. The good news is that using generic types won't make your
+/// program run any slower than it would with concrete types.
+///
+/// Rust accomplishes this by performing monomorphization of the code using
+/// generics at compile time. Monomorphization is the process of turning generic
+/// code into specific code by filling in the concrete types that are used when
+/// compiled.
 
 impl Point<f32, f32> {
     // distance from origin.
@@ -1161,8 +1161,8 @@ pub fn print_ptr(p: &impl Pointer) {
     println!("pointer: {}", p.my());
 }
 
-// The impl Trait syntax works for straightforward cases but is actually syntax
-// sugar for a longer form known as a trait bound; it looks like this:
+/// The `impl Trait` syntax works for straightforward cases but is actually
+/// syntax sugar for a longer form known as a trait bound; it looks like this:
 
 pub fn address<T: Pointer>(item: &T) -> String {
     // This longer form is equivalent to the example in the previous section but
@@ -1245,17 +1245,20 @@ impl<T: Display + PartialOrd> Pair<T> {
     }
 }
 
-// We can also conditionally implement a trait for any type that implements another trait.
-// Implementations of a trait on any type that satisfies the trait bounds are called blanket
-// implementations and are extensively used in the Rust standard library. For example,
-// the standard library implements the ToString trait on any type that implements the Display
-// trait. The impl block in the standard library looks similar to this code:
-//
-// impl<T: Display> ToString for T {
-//    // -- snip --
-// }
-//
-// let s = 3.to_string();
+/// We can also conditionally implement a trait for any type that implements
+/// another trait. Implementations of a trait on any type that satisfies the
+/// trait bounds are called blanket implementations and are extensively used in
+/// the Rust standard library. For example, the standard library implements the
+/// [`ToString`] trait on any type that implements the [`Display`] trait. The
+/// `impl` block in the standard library looks similar to this code:
+///
+/// ```no_run
+/// impl<T: Display> ToString for T {
+///    // -- snip --
+/// }
+///
+/// let s = 3.to_string();
+/// ```
 
 fn trait5() {
     let p1 = Pair::new(1, 2);
@@ -1293,34 +1296,40 @@ fn trait6() {
     a.derived();
 }
 
-// Lifetime annotations don’t change how long any of the references live. Rather, they describe the
-// relationships of the lifetimes of multiple references to each other without affecting the lifetimes.
+// Lifetime annotations don’t change how long any of the references live.
+// Rather, they describe the relationships of the lifetimes of multiple
+// references to each other without affecting the lifetimes.
 //
-// The function signature now tells Rust that for some lifetime 'a, the function takes two parameters,
-// both of which are string slices that live at least as long as lifetime 'a. The function signature
-// also tells Rust that the string slice returned from the function will live at least as long as
-// lifetime 'a.
+// The function signature now tells Rust that for some lifetime 'a, the function
+// takes two parameters, both of which are string slices that live at least as
+// long as lifetime 'a. The function signature also tells Rust that the string
+// slice returned from the function will live at least as long as lifetime 'a.
 //
-// In practice, it means that the lifetime of the reference returned by the longest function is the
-// same as the smaller of the lifetimes of the values referred to by the function arguments. These
-// relationships are what we want Rust to use when analyzing this code.
+// In practice, it means that the lifetime of the reference returned by the
+// longest function is the same as the smaller of the lifetimes of the values
+// referred to by the function arguments. These relationships are what we want
+// Rust to use when analyzing this code.
 //
-// Remember, when we specify the lifetime parameters in this function signature, we’re not changing
-// the lifetimes of any values passed in or returned. Rather, we’re specifying that the borrow checker
-// should reject any values that don’t adhere to these constraints.
+// Remember, when we specify the lifetime parameters in this function signature,
+// we’re not changing the lifetimes of any values passed in or returned. Rather,
+// we’re specifying that the borrow checker should reject any values that don’t
+// adhere to these constraints.
 //
-// Note that the longest function doesn’t need to know exactly how long x and y will live, only that
-// some scope can be substituted for 'a that will satisfy this signature.
+// Note that the longest function doesn’t need to know exactly how long x and y
+// will live, only that some scope can be substituted for 'a that will satisfy
+// this signature.
 //
-// When we pass concrete references to longest, the concrete lifetime that is substituted for 'a is
-// the part of the scope of x that overlaps with the scope of y. In other words, the generic lifetime
-// 'a will get the concrete lifetime that is equal to the smaller of the lifetimes of x and y.
+// When we pass concrete references to longest, the concrete lifetime that is
+// substituted for 'a is the part of the scope of x that overlaps with the scope
+// of y. In other words, the generic lifetime 'a will get the concrete lifetime
+// that is equal to the smaller of the lifetimes of x and y.
 //
-// Because we’ve annotated the returned reference with the same lifetime parameter 'a, the returned
-// reference will also be valid for the length of the smaller of the lifetimes of x and y.
+// Because we’ve annotated the returned reference with the same lifetime
+// parameter 'a, the returned reference will also be valid for the length of the
+// smaller of the lifetimes of x and y.
 //
-// Ultimately, lifetime syntax is about connecting the lifetimes of various parameters and return
-// values of functions.
+// Ultimately, lifetime syntax is about connecting the lifetimes of various
+// parameters and return values of functions.
 
 fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {
     if x.len() >= y.len() {
@@ -1345,8 +1354,8 @@ fn lifetime1() {
     println!("longest: {}", longest(s1, s2));
     println!("shortest: {}", shortest("hello", "world"));
 
-    // Let’s look at how the lifetime annotations restrict the longest function by passing in
-    // references that have different concrete lifetimes. Listing 10-22 is a straightforward example.
+    // Let’s look at how the lifetime annotations restrict the longest function
+    // by passing in references that have different concrete lifetimes.
 
     let string1 = String::from("long string is long");
 
@@ -1367,8 +1376,8 @@ fn lifetime1() {
     // println!("The longest string is {}", result);
 }
 
-// We can define structs to hold references, but in that case we would need to add a lifetime
-// annotation on every reference in the struct’s definition.
+// We can define structs to hold references, but in that case we would need to
+// add a lifetime annotation on every reference in the struct’s definition.
 
 #[derive(Debug)]
 struct ImportantExcerpt<'a> {
@@ -1407,35 +1416,38 @@ fn lifetime3() {
     i.announce_and_return_part(&novel);
 }
 
-// The compiler uses three rules to figure out the lifetimes of the references when there
-// aren’t explicit annotations. The first rule applies to input lifetimes, and the second
-// and third rules apply to output lifetimes.
-//
-// If the compiler gets to the end of the three rules and there are still references for
-// which it can’t figure out lifetimes, the compiler will stop with an error. These rules
-// apply to fn definitions as well as impl blocks.
-//
-// The first rule is that the compiler assigns a different lifetime parameter to each
-// lifetime in each input type. References like &'_ i32 needs a lifetime parameter,
-// and structures like ImportantExcerpt<'_> need a lifetime parameter. For example:
-//
-//  * The function fn foo(x: &i32) would get one lifetime parameter and become
-//    fn foo<'a>(x: &'a i32).
-//  * The function fn foo(x: &i32, y: &i32) would get two lifetime parameters
-//    and become fn foo<'a, 'b>(x: &'a i32, y: &'b i32).
-//  * The function fn foo(x: &ImportantExcerpt) would get two lifetime parameters
-//    and become fn foo<'a, 'b>(x: &'a ImportantExcerpt<'b>).
-//
-// The second rule is that, if there is exactly one input lifetime parameter, that
-// lifetime is assigned to all output lifetime parameters: fn foo<'a>(x: &'a i32) -> &'a i32.
-//
-// The third rule is that, if there are multiple input lifetime parameters, but one of
-// them is &self or &mut self because this is a method, the lifetime of self is assigned
-// to all output lifetime parameters. This third rule makes methods much nicer to read and
-// write because fewer symbols are necessary.
-
-// For further information on lifetime check out the "lifetime elision rules", or start here:
-// https://rust-book.cs.brown.edu/ch10-03-lifetime-syntax.html#lifetime-elision
+/// The compiler uses three rules to figure out the lifetimes of the references
+/// when there aren’t explicit annotations. The first rule applies to input
+/// lifetimes, and the second and third rules apply to output lifetimes.
+///
+/// If the compiler gets to the end of the three rules and there are still
+/// references for which it can’t figure out lifetimes, the compiler will stop
+/// with an error. These rules apply to fn definitions as well as impl blocks.
+///
+/// The first rule is that the compiler assigns a different lifetime parameter to
+/// each lifetime in each input type. References like `&'_ i32` needs a lifetime
+/// parameter, and structures like `ImportantExcerpt<'_>` need a lifetime
+/// parameter. For example:
+///
+///  * The function `fn foo(x: &i32)` would get one lifetime parameter and become
+///    `fn foo<'a>(x: &'a i32)`.
+///  * The function `fn foo(x: &i32, y: &i32)` would get two lifetime parameters
+///    and become `fn foo<'a, 'b>(x: &'a i32, y: &'b i32)`.
+///  * The function `fn foo(x: &ImportantExcerpt)` would get two lifetime parameters
+///    and become `fn foo<'a, 'b>(x: &'a ImportantExcerpt<'b>)`.
+///
+/// The second rule is that, if there is exactly one input lifetime parameter,
+/// that lifetime is assigned to all output lifetime parameters: `fn foo<'a>(x:
+/// &'a i32) -> &'a i32`.
+///
+/// The third rule is that, if there are multiple input lifetime parameters, but
+/// one of them is `&self` or `&mut self` because this is a method, the lifetime of
+/// self is assigned to all output lifetime parameters. This third rule makes
+/// methods much nicer to read and write because fewer symbols are necessary.
+///
+/// For further information on lifetime check out the "lifetime elision rules",
+/// or start here:
+/// - [https:///rust-book.cs.brown.edu/ch10-03-lifetime-syntax.html#lifetime-elision]
 
 fn longest_with_an_announcement<'a, T>(x: &'a str, y: &'a str, ann: T) -> &'a str
 where
@@ -1503,9 +1515,9 @@ fn closure2() {
     let add_one_v3 = |x| x + 1;
     let add_one_v4 = |x| x + 1;
 
-    // The add_one_v3 and add_one_v4 lines require the closures to be
-    // evaluated to be able to compile because the types will be inferred
-    // from their usage.
+    // The `add_one_v3` and `add_one_v4` lines require the closures to be
+    // evaluated to be able to compile because the types will be inferred from
+    // their usage.
 
     println!("{}", add_one_v1(0));
     println!("{}", add_one_v2(1));
@@ -1521,11 +1533,11 @@ fn closure3() {
     println!("s was dropped and is thus unusable.");
 }
 
-// Closures can capture values from their environment in three ways, which
-// directly map to the three ways a function can take a parameter: borrowing
-// immutably, borrowing mutably, and taking ownership. The closure will decide
-// which of these to use based on what the body of the function does with the
-// captured values.
+/// Closures can capture values from their environment in three ways, which
+/// directly map to the three ways a function can take a parameter: borrowing
+/// immutably, borrowing mutably, and taking ownership. The closure will decide
+/// which of these to use based on what the body of the function does with the
+/// captured values.
 
 fn closure4() {
     // borrowing immutably
@@ -1574,31 +1586,30 @@ fn closure6() {
 /// value out of the closure, mutate the captured value, neither
 /// move nor mutate the value, or capture nothing from the
 /// environment to begin with.
-
+///
 /// The way a closure captures and handles values from the environment
 /// affects which traits the closure implements, and traits are how
 /// functions and structs can specify what kinds of closures they can use.
 ///
 /// Closures will automatically implement one, two, or all three of
-/// these Fn traits, in an additive fashion, depending on how the
+/// these [`Fn`] traits, in an additive fashion, depending on how the
 /// closure’s body handles the values:
 ///
-///   - `FnOnce` applies to a closure that can be called once. All
-///     closures implement at least this trait, because all closures
-///     can be called. Closures that move captured values out of its body
-///     will only implement `FnOnce` and none of the other Fn traits,
-///     because it can only be called once.
+///   - [`FnOnce`] applies to a closure that can be called once. All closures
+///     implement at least this trait, because all closures can be called.
+///     Closures that move captured values out of its body will only implement
+///     [`FnOnce`] and none of the other [`Fn`] traits, because it can only be
+///     called once.
 ///
-///   - `FnMut` applies to closures that don't move captured values out of
+///   - [`FnMut`] applies to closures that don't move captured values out of
 ///     their body, but that might mutate the captured values. These closures
 ///     can be called more than once.
 ///
-///   - `Fn` applies to closures that don't move captured values out of
-///     their body and that don't mutate captured values, as well as
-///     closures that capture nothing from their environment. These closures
-///     can be called more than once without mutating their environment,
-///     which is important in cases such as calling a closure multiple times
-///     concurrently.
+///   - [`Fn`] applies to closures that don't move captured values out of their
+///     body and that don't mutate captured values, as well as closures that
+///     capture nothing from their environment. These closures can be called more
+///     than once without mutating their environment, which is important in cases
+///     such as calling a closure multiple times concurrently.
 
 fn closure7() {
     struct MyOption<T>(Option<T>);
@@ -1623,7 +1634,7 @@ fn closure7() {
 
 /// Now let’s look at the standard library method `sort_by_key` defined on
 /// slices, to see how that differs from `unwrap_or_else` and why `sort_by_key`
-/// uses `FnMut` instead of `FnOnce` for the trait bound.
+/// uses [`FnMut`] instead of [`FnOnce`] for the trait bound.
 
 fn closure8() {
     let mut list = [
@@ -1652,17 +1663,17 @@ fn closure8() {
 
     list.sort_by_key(|r| r.width);
 
-    // The reason sort_by_key is defined to take an FnMut closure is that it calls
+    // The reason `sort_by_key` is defined to take an `FnMut` closure is that it calls
     // the closure multiple times: once for each item in the slice. The closure
-    // |r| r.width doesn’t capture, mutate, or move out anything from its environment,
+    // `|r| r.width` doesn’t capture, mutate, or move out anything from its environment,
     // so it meets the trait bound requirements.
 
     println!("{:?}", list);
 }
 
 /// In contrast, the code below shows an example of a closure that implements
-/// just the `FnOnce` trait, because it moves a value out of the environment. The
-/// compiler won’t let us use this closure with `sort_by_key`:
+/// just the [`FnOnce`] trait, because it moves a value out of the environment.
+/// The compiler won’t let us use this closure with `sort_by_key`:
 
 fn closure9() {
     let mut list = [
@@ -1694,12 +1705,12 @@ fn closure9() {
     println!("{:?} {} -> {:?}", list, value, sort_operations);
 }
 
-/// Note: Functions can implement all three of the `Fn` traits too. If what we
-/// want to do doesn’t require capturing a value from the environment, we can use
-/// the name of a function rather than a closure where we need something that
-/// implements one of the `Fn` traits. For example, on an `Option<Vec<T>>` value,
-/// we could call `unwrap_or_else(Vec::new)` to get a new, empty vector if the
-/// value is `None`.
+/// Note: Functions can implement all three of the [`Fn`] traits too. If what we
+/// want to do doesn’t require capturing a value from the environment, we can
+/// use the name of a function rather than a closure where we need something
+/// that implements one of the [`Fn`] traits. For example, on an
+/// `Option<Vec<T>>` value, we could call `unwrap_or_else(Vec::new)` to get a
+/// new, empty vector if the value is [`None`].
 
 fn closure10() {
     let v1: Vec<i32> = None.unwrap_or_else(Vec::new);
@@ -1979,13 +1990,14 @@ fn iter10() {
 /// heap instead of on the stack. But they don’t have many extra capabilities
 /// either. You’ll use them most often in these situations:
 ///
-///   - When you have a type whose size can’t be known at compile time and you want to use a value
-///     of that type in a context that requires an exact size. For example, with values of
-///     **recursive types**.
-///   - When you have a large amount of data and you want to transfer ownership but ensure the data
-///     won’t be copied when you do so.
-///   - When you want to own a value and you care only that it’s a type that implements a particular
-///     trait rather than being of a specific type. This case is known as **trait object**.
+///   - When you have a type whose size can’t be known at compile time and you
+///     want to use a value of that type in a context that requires an exact size.
+///     For example, with values of **recursive types**.
+///   - When you have a large amount of data and you want to transfer ownership
+///     but ensure the data won’t be copied when you do so.
+///   - When you want to own a value and you care only that it’s a type that
+///     implements a particular trait rather than being of a specific type. This
+///     case is known as **trait object**.
 
 fn smartptr1() {
     let b = Box::new(5);
@@ -2016,7 +2028,7 @@ fn smartptr1() {
 /// space than the `Cons` variant. We now know that any `List` value will take
 /// up the size of an `i32` plus the size of a box’s pointer data.
 ///
-/// In a 64-bit architecture, if we consider `Box<T>`, it will occupy 4 bytes,
+/// In a 64-bit architecture, if we consider [`Box<T>`], it will occupy 4 bytes,
 /// equating to the size of a pointer on such systems.
 ///
 /// The `Box<T>` type is a smart pointer because it implements the `Deref`
@@ -2064,17 +2076,17 @@ fn smartptr2() {
     println!("");
 }
 
-/// Implementing the `Deref` trait allows you to customize the behavior of the
+/// Implementing the [`Deref`] trait allows you to customize the behavior of the
 /// dereference operator `*`. We’ll explore how implementing the Deref trait
 /// makes it possible for smart pointers to work in ways similar to references.
 /// Then we’ll look at Rust’s deref coercion feature and how it lets us work
 /// with either references or smart pointers.
 ///
-/// Without the Deref trait, the compiler can only dereference & references.
+/// Without the [`Deref`] trait, the compiler can only dereference `&` references.
 ///
 /// Note: there’s one big difference between the `MyBox<T>` type we’re about to
-/// build and the real `Box<T>`: our version will not store its data on the
-/// heap. We are focusing this example on `Deref`, so where the data is actually
+/// build and the real [`Box<T>`]: our version will not store its data on the
+/// heap. We are focusing this example on [`Deref`], so where the data is actually
 /// stored is less important than the pointer-like behavior.
 
 struct MyBox<T>(T);
@@ -2115,12 +2127,13 @@ fn smartptr3() {
     println!("{} {} {}", x, *y, *z);
 }
 
-/// **Deref coercion** converts a reference to a type that implements the `Deref`
-/// trait into a reference to another type. For example, `&String` to `&str`
-/// because `String` implements `Deref` such that it returns `&str`.
+/// **Deref coercion** converts a reference to a type that implements the
+/// [`Deref`] trait into a reference to another type. For example, [`&String`]
+/// to [`&str`] because [`String`] implements [`Deref`] such that it returns
+/// [`&str`].
 ///
-/// Deref coercion is a convenience Rust performs on arguments to functions and
-/// methods, and works only on types that implement the `Deref` trait.
+/// [`Deref`] coercion is a convenience Rust performs on arguments to functions and
+/// methods, and works only on types that implement the [`Deref`] trait.
 ///
 /// Deref coercion was added to Rust so that programmers writing function and
 /// method calls don’t need to add as many explicit references and dereferences
@@ -2146,10 +2159,10 @@ fn smartptr4() {
 
     // Because we implemented the `Deref` trait on `MyBox<T>`, Rust can turn
     // `&MyBox<String>` into `&String` by calling deref. The standard library
-    // provides an implementation of `Deref` on `String` that returns a string
-    // slice, and this is in the API documentation for `Deref`. Rust calls deref
-    // again to turn the `&String` into `&str`, which matches the hello function’s
-    // definition.
+    // provides an implementation of [`Deref`] on [`String`] that returns a
+    // string slice, and this is in the API documentation for `Deref`. Rust
+    // calls deref again to turn the `&String` into `&str`, which matches the
+    // hello function’s definition.
     let m = MyBox::new(String::from("Alekhine"));
     hello(&m);
 
@@ -2232,7 +2245,7 @@ fn smartptr8() {
 
 /// In the majority of cases you know exactly which variables owns a given value.
 /// However, there are cases when a single value might have multiple owners. In
-/// this case you may use `Rc<T>`.
+/// this case you may use [`Rc<T>`].
 
 #[derive(Debug)]
 enum List2 {
@@ -2305,14 +2318,15 @@ fn smartptr10() {
 /// can’t guarantee that. The unsafe code involved is then wrapped in a safe API, and
 /// the outer type is still immutable.
 ///
-/// Let’s explore this concept by looking at the `RefCell<T>` type that follows the
-/// interior mutability pattern.
+/// Let’s explore this concept by looking at the [`RefCell<T>`] type that
+/// follows the interior mutability pattern.
 ///
-/// Unlike `Rc<T>`, the `RefCell<T>` type represents single ownership over the data
-/// it holds. What makes `RefCell<T>` different from `Box<T>` for example, which
-/// also holds ownership over the data, is that with `RefCell<T>` you can enforce
-/// the borrowing rules in runtime rather than in compile time. If you break the
-/// borrwing rules in runtime your program will panic and exit.
+/// Unlike [`Rc<T>`], the [`RefCell<T>`] type represents single ownership over
+/// the data it holds. What makes [`RefCell<T>`] different from [`Box<T>`] for
+/// example, which also holds ownership over the data, is that with
+/// [`RefCell<T>`] you can enforce the borrowing rules in runtime rather than in
+/// compile time. If you break the borrwing rules in runtime your program will
+/// panic and exit.
 ///
 /// The advantages of checking the borrwing rules at runtime instead of at compile
 /// time is that certain memory-safe scenarios are then allowed.
@@ -2324,17 +2338,18 @@ fn smartptr10() {
 /// The `RefCell<T>` type is useful when you’re sure your code follows the borrowing
 /// rules but the compiler is unable to understand and guarantee that.
 ///
-/// Similar to `Rc<T>`, `RefCell<T>` is only for use in **single-threaded** scenarios
-/// and will give you a compile-time error if you try using it in a multithreaded context.
+/// Similar to [`Rc<T>`], [`RefCell<T>`] is only for use in **single-threaded**
+/// scenarios and will give you a compile-time error if you try using it in a
+/// multithreaded context.
 ///
-/// Recap of why to choose `Box<T>`, `Rc<T>` or `RefCell<T>`:
-///   - `Rc<T>` enables multiple owners of the same data; `Box<T>` and `RefCell<T>`
-///     have single owners.
-///   - `Box<T>` allows immutable or mutable borrows checked at compile time;
-///     `Rc<T>` allows only immutable borrows checked at compile time; `RefCell<T>`
+/// Recap of why to choose [`Box<T>`], [`Rc<T>`] or [`RefCell<T>`]:
+///   - [`Rc<T>`] enables multiple owners of the same data; [`Box<T>`] and
+///     [`RefCell<T>`] have single owners.
+///   - [`Box<T>`] allows immutable or mutable borrows checked at compile time;
+///     [`Rc<T>`] allows only immutable borrows checked at compile time; [`RefCell<T>`]
 ///     allows immutable or mutable borrows checked at runtime.
-///   - Because `RefCell<T>` allows mutable borrows checked at runtime, you can
-///     mutate the value inside the `RefCell<T>` even when the `RefCell<T>` is
+///   - Because [`RefCell<T>`] allows mutable borrows checked at runtime, you can
+///     mutate the value inside the [`RefCell<T>`] even when the [`RefCell<T>`] is
 ///     immutable.
 ///
 /// Mutating the value inside an immutable value is the interior mutability pattern.
