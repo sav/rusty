@@ -1,7 +1,7 @@
 use std::fs::File;
 use std::io;
 
-fn handle_file(path: &str) {
+pub fn handle_file(path: &str) {
     let f: io::Result<File> = File::open(path);
 
     let f = match f {
@@ -23,7 +23,7 @@ fn handle_file(path: &str) {
     println!("{:?}\n~~~ ~~~ ~~~\n", f);
 }
 
-fn handle_file_alt() {
+pub fn handle_file_alt() {
     // a construct similar to the above but does not contain any `match`,
     // and thus it is cleaner to read.
     let greeting_file = File::open("/etc/motd").unwrap_or_else(|error| {
@@ -38,13 +38,13 @@ fn handle_file_alt() {
     println!("{:?}", greeting_file);
 }
 
-fn handle_file_expect(path: &str) {
+pub fn handle_file_expect(path: &str) {
     let f = File::open(path)
         .expect("file not accessible: {path}");
     println!("file is accessible: {f:?}");
 }
 
-fn main() {
+pub fn main() {
     handle_file("/tmp/hello.txt");
     handle_file_alt();
     handle_file_expect("/etc/motd");

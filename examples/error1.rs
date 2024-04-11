@@ -1,3 +1,3 @@
-fn main() {
+pub fn main() {
     panic!("crash and burn");
 }

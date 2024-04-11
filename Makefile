@@ -59,8 +59,9 @@ clean:
 
 .PHONY: doc
 doc:
-	cargo doc
-	cargo doc --package echo
+	cargo doc --all
+	cargo doc --package echo --target-dir=target/doc/echo
+	cargo doc --examples --target-dir=target/doc/examples
 
 ## The commands below are merely illustrative.
 

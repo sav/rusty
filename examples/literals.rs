@@ -1,7 +1,7 @@
 // literals.rs, Examples from the book "Rust by Example"
 // Copyright (C) 2024, Savio Sena <savio.sena@gmail.com>
 
-fn main() {
+pub fn main() {
     let x = 1u8;
     let y = 2u32;
     let z = 3f32;

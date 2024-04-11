@@ -3,7 +3,7 @@
 
 use std::mem;
 
-fn main() {
+pub fn main() {
     // Fixed-size array (type signature is superfluous).
     let xs: [i32; 5] = [1, 2, 3, 4, 5];
 

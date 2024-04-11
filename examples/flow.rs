@@ -3,7 +3,7 @@
 
 #[allow(unused_variables)]
 
-fn if_else() {
+pub fn if_else() {
     let n = 5;
 
     let m = if n <= 0 { 10 * n } else { n / 2 };
@@ -13,7 +13,7 @@ fn if_else() {
 
 #[allow(unreachable_code, unused_labels)]
 
-fn labels() {
+pub fn labels() {
     'outer: loop {
         println!("labels(): outer.");
         'inner: loop {
@@ -24,7 +24,7 @@ fn labels() {
     println!("labels(): end.");
 }
 
-fn loop_ret() {
+pub fn loop_ret() {
     let mut counter = 0;
 
     let result = loop {
@@ -39,7 +39,7 @@ fn loop_ret() {
     println!("result = {result}");
 }
 
-fn for_match_str() {
+pub fn for_match_str() {
     let names = vec!["foo", "bar", "far"];
     for name in names.iter() {
         match name {
@@ -49,7 +49,7 @@ fn for_match_str() {
     }
 }
 
-fn iter_mut() {
+pub fn iter_mut() {
     let mut names = vec!["Bob", "Frank", "Ferris"];
     for name in names.iter_mut() {
         *name = match name {
@@ -61,12 +61,12 @@ fn iter_mut() {
 }
 
 #[allow(dead_code)]
-enum Temperature {
+pub enum Temperature {
     Celsius(i32),
     Fahrenheit(i32),
 }
 
-fn guards() {
+pub fn guards() {
     let temperature = Temperature::Celsius(35);
     match temperature {
         Temperature::Celsius(t) if t > 30 => println!("{}C is above 30 Celsius", t),
@@ -78,7 +78,7 @@ fn guards() {
     }
 }
 
-fn binding() {
+pub fn binding() {
     fn age() -> u32 {
         15
     }
@@ -99,7 +99,7 @@ fn binding() {
     }
 }
 
-fn if_let() {
+pub fn if_let() {
     let number = Some(7);
     let letter: Option<i32> = None;
 
@@ -138,7 +138,7 @@ fn if_let() {
 
 use std::str::FromStr;
 
-fn get_count_item(s: &str) -> (u64, &str) {
+pub fn get_count_item(s: &str) -> (u64, &str) {
     let mut it = s.split(' ');
     let (Some(count_str), Some(item)) = (it.next(), it.next()) else {
         panic!("Can't segment count item pair: '{s}'");
@@ -156,7 +156,7 @@ fn get_count_item(s: &str) -> (u64, &str) {
 /// 🛈 stable since: rust 1.65
 /// 🛈 you can target specific edition by compiling like this rustc --edition=2021 main.rs
 
-fn let_else() {
+pub fn let_else() {
     assert_eq!(get_count_item("3 chairs"), (3, "chairs"));
 }
 
@@ -173,7 +173,7 @@ fn while_let() {
     }
 }
 
-fn main() {
+pub fn main() {
     println!("-=- if_else() -=-");
     if_else();
 

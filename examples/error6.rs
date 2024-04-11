@@ -48,13 +48,12 @@ impl Guess {
 use std::fmt;
 
 impl fmt::Display for Guess {
-fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    write!(f, "{}", self.value)
-}
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.value)
+    }
 }
 
-fn main() {
-
+pub fn main() {
     let guess = Guess::new(1);
     println!("{}", guess);
 

@@ -1,7 +1,7 @@
 // bitwise.rs, Examples from the book "Rust by Example"
 // Copyright (C) 2024, Savio Sena <savio.sena@gmail.com>
 
-fn main() {
+pub fn main() {
     println!("true AND false is {}", true && false);
     println!("true OR false is {}", true || false);
     println!("NOT true is {}", !true);

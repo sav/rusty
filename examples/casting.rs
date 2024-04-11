@@ -3,7 +3,7 @@
 
 #![allow(overflowing_literals)]
 
-fn main() {
+pub fn main() {
     println!("1000 as a u16 is: {}", 1000 as u16);
     println!("1000 as a u8 is : {}", 1000 as u8);
     println!("  -1 as a u8 is : {}", (-1i8) as u8);

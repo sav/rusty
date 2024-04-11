@@ -1,7 +1,7 @@
 // print.rs, Examples from the book "Rust by Example"
 // Copyright (C) 2024, Savio Sena <savio.sena@gmail.com>
 
-fn main() {
+pub fn main() {
     println!("Base 10:               {}",   69420); // 69420
     println!("Base 2 (binary):       {:b}", 69420); // 10000111100101100
     println!("Base 8 (octal):        {:o}", 69420); // 207454

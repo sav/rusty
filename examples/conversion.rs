@@ -23,7 +23,7 @@ use std::convert::{
 };
 
 #[derive(Debug)]
-struct Number1 {
+pub struct Number1 {
     value: i32,
 }
 
@@ -34,7 +34,7 @@ impl From<i32> for Number1 {
 }
 
 #[derive(Debug)]
-struct Number2 {
+pub struct Number2 {
     value: i32,
 }
 
@@ -45,7 +45,7 @@ impl Into<Number2> for i32 {
 }
 
 #[derive(Debug, PartialEq)]
-struct EvenNumber(i32);
+pub struct EvenNumber(i32);
 
 impl TryFrom<i32> for EvenNumber {
     type Error = ();
@@ -83,7 +83,7 @@ impl TryFrom<i32> for EvenNumber {
 /// However this is a small trade-off considering we get the functionality for
 /// free.
 
-fn from_and_into() {
+pub fn from_and_into() {
     // From
     let my_str = "hello";
     let my_string = String::from(my_str);
@@ -108,7 +108,7 @@ fn from_and_into() {
 /// converting between types. Unlike `From`/`Into`, the `TryFrom`/`TryInto`
 /// traits are used for fallible conversions, and as such, return `Results`.
 
-fn tryfrom_and_tryinto() {
+pub fn tryfrom_and_tryinto() {
     // TryFrom
     assert_eq!(EvenNumber::try_from(8), Ok(EvenNumber(8)));
     assert_eq!(EvenNumber::try_from(5), Err(()));
@@ -121,7 +121,7 @@ fn tryfrom_and_tryinto() {
 }
 
 #[derive(Debug, PartialEq)]
-struct Circle {
+pub struct Circle {
     radius: i32
 }
 
@@ -137,7 +137,7 @@ use std::str::FromStr;
 /// `Circle`.
 
 #[derive(Debug, PartialEq, Eq)]
-struct ParseCircleError;
+pub struct ParseCircleError;
 
 impl FromStr for Circle {
     type Err = ParseCircleError;
@@ -171,7 +171,7 @@ impl FromStr for Circle {
 /// within the standard library. To obtain this functionality on a user defined
 /// type simply implement the `FromStr` trait for that type.
 
-fn to_and_from_strings() {
+pub fn to_and_from_strings() {
     // To Strings
     let circle = Circle { radius: 6 };
     println!("{}", circle.to_string());
@@ -192,7 +192,7 @@ fn to_and_from_strings() {
     assert!(Circle::from_str("<2>").is_err());
 }
 
-fn main() {
+pub fn main() {
     println!("-=- from_and_into() -=-");
     from_and_into();
 
