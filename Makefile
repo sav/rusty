@@ -1,12 +1,12 @@
 ## Makefile, Copyright (C) 2024, Savio Sena <savio.sena@gmail.com>
 
-all: build test doc
+all: build test doc examples
 
 update:
 	cargo update
 
 .PHONY: build
-build: echo
+build: echo examples
 	cargo build
 
 check:
@@ -26,12 +26,6 @@ test:
 echo:
 	cargo build --package echo
 
-%: examples/%.rs
-	@echo "~~~ $< ~~~"
-	@RUST_BACKTRACE=full cargo run --example $@ || true
-
-run-examples: $(EXAMPLES) /tmp/hello.txt
-
 .PHONY: fmt
 fmt:
 	cargo fmt
@@ -40,9 +34,10 @@ fmt:
 fmt-check:
 	cargo fmt --check
 
-.PHONY: examples
+.PHONY: examples ex
 examples:
 	cargo build --examples
+ex: examples
 
 lint:
 	cargo clippy
@@ -67,9 +62,7 @@ doc:
 	cargo doc
 	cargo doc --package echo
 
-##
 ## The commands below are merely illustrative.
-##
 
 modules-tree-bin:
 	cargo modules generate tree --with-types --bin rusty
