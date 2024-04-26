@@ -1,7 +1,7 @@
 // destructuring.rs, Examples from the book "Rust by Example"
 // Copyright (C) 2024, Savio Sena <savio.sena@gmail.com>
 
-pub fn match_tuples() {
+fn match_tuples() {
     let triple = (0, -2, 3);
     // TODO ^ Try different values for `triple`
 
@@ -19,7 +19,7 @@ pub fn match_tuples() {
     }
 }
 
-pub fn match_slices() {
+fn match_slices() {
     // Try changing the values in the array, or make it a slice!
     let array = [1, -2, 6];
 
@@ -58,7 +58,7 @@ pub fn match_slices() {
 }
 
 #[allow(dead_code)]
-pub enum Color {
+enum Color {
     // These 3 are specified solely by their name.
     Red,
     Blue,
@@ -71,7 +71,7 @@ pub enum Color {
     CMYK(u32, u32, u32, u32),
 }
 
-pub fn match_enums() {
+fn match_enums() {
     let color = Color::RGB(122, 17, 40);
     // TODO ^ Try different variants for `color`
 
@@ -93,7 +93,7 @@ pub fn match_enums() {
     }
 }
 
-pub fn match_ptrs() {
+fn match_ptrs() {
     // Assign a reference of type `i32`. The `&` signifies there
     // is a reference being assigned.
     let reference = &4;
@@ -144,7 +144,7 @@ pub fn match_ptrs() {
     }
 }
 
-pub fn match_structs() {
+fn match_structs() {
     struct Foo {
         x: (u32, u32),
         y: u32,
@@ -187,7 +187,15 @@ pub fn match_structs() {
     println!("Nested: nested_x = {nested_x:?}, nested_y = {nested_y:?}");
 }
 
-pub fn main() {
+fn func_signature() {
+    struct Foo(i32);
+    fn get_foo(Foo(x): Foo) -> i32 {
+        x
+    }
+    println!("{}", get_foo(Foo(1)));
+}
+
+fn main() {
     println!("-=- match_tuples() -=-");
     match_tuples();
 
@@ -202,4 +210,7 @@ pub fn main() {
 
     println!("-=- match_structs() -=-");
     match_structs();
+
+    println!("-=- func_signature() -=-");
+    func_signature();
 }
