@@ -26,8 +26,8 @@ debug-assertions = true
 
 [dependencies]
 rand = "0.8.5"
-cargo-modules = "0.5.9"
-unicode-segmentation = "1.7.1"
+cargo-modules = "0.5.14"
+unicode-segmentation = "1.11.0"
 rust-analyzer = "0.0.1"
 macros = { path = "src/lib/macros" }
 macros_derive = { path = "src/lib/macros_derive" }
