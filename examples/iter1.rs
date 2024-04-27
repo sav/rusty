@@ -1,10 +1,10 @@
-// iter.rs, Examples from the book "Rust by Example"
+// iter1.rs, Examples from the book "Rust by Example"
 // Copyright (C) 2024, Savio Sena <savio.sena@gmail.com>
 
 /// `std::iter::Iterator::any` is a function which when passed an iterator, will
 /// return `true` if any element satisfies the predicate. Otherwise `false`.
 
-pub fn iter_any() {
+fn iter_any() {
     let vec1 = vec![1, 2, 3];
 
     println!("{:?}", vec1.iter().any(|&x| x == 2));
@@ -18,7 +18,7 @@ pub fn iter_any() {
 /// `Iterator::find` gives you a reference to the item. But if you want the
 /// _index_ of the item, use `Iterator::position`.
 
-pub fn iter_find() {
+fn iter_find() {
     // `Iterator::find`.
     let vec1 = vec![1, 2, 3];
     let vec2 = vec![4, 5, 6];
@@ -56,7 +56,7 @@ pub fn iter_find() {
 ///
 /// `Option` and `Iterator` implement their fair share of HOFs.
 
-pub fn iter_hof() {
+fn iter_hof() {
     fn is_odd(n: u32) -> bool { n % 2 == 1 }
     let upper = 1000;
     let sum_of_squared_odd_numbers: u32 = (0..)
@@ -67,7 +67,19 @@ pub fn iter_hof() {
     println!("functional style: {}", sum_of_squared_odd_numbers);
 }
 
-pub fn main() {
+fn iter_aux() {
+    let mut sequence = 0..20;
+
+    println!("{:?}", sequence.next());
+    println!("{:?}", sequence.next());
+    println!("{:?}", sequence.next());
+
+    for i in sequence.skip(4).take(4) {
+        println!("{}", i);
+    }
+}
+
+fn main() {
     println!("-=- iter_any() -=-");
     iter_any();
 
@@ -76,4 +88,7 @@ pub fn main() {
 
     println!("-=- iter_hof() -=-");
     iter_hof();
+
+    println!("-=- iter_aux() -=-");
+    iter_aux();
 }
