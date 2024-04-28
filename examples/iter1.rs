@@ -79,6 +79,21 @@ fn iter_aux() {
     }
 }
 
+fn iter_into() {
+    let a = 5;
+
+    let v1 = vec![1, 2, 3];
+    println!("{:?}", v1);
+
+    let v2: Vec<_> = v1.iter().map(|x| x+a).collect();
+    println!("{:?}", v2);
+
+    let v3: Vec<_> = v1.into_iter().map(|x| x+a).collect();
+    println!("{:?}", v3);
+
+    // v1 unusable here.
+}
+
 fn main() {
     println!("-=- iter_any() -=-");
     iter_any();
@@ -91,4 +106,7 @@ fn main() {
 
     println!("-=- iter_aux() -=-");
     iter_aux();
+
+    println!("-=- iter_into() -=-");
+    iter_into();
 }
