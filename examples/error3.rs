@@ -1,6 +1,6 @@
 use std::fs::File;
 
-pub fn handle_file(path: &str) {
+fn handle_file(path: &str) {
     let f = File::open(path).unwrap();
     println!("{:?}\n~~~ ~~~ ~~~\n", f);
 
@@ -8,7 +8,7 @@ pub fn handle_file(path: &str) {
     println!("{:?}\n~~~ ~~~ ~~~\n", f);
 }
 
-pub fn main() {
+fn main() {
     handle_file("/tmp");
     handle_file("/tmp/hello.txt");
 }

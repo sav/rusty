@@ -3,7 +3,7 @@ use std::io::{self, Read};
 
 // long version without the `?` operator.
 
-pub fn read_username_from_file() -> Result<String, io::Error> {
+fn read_username_from_file() -> Result<String, io::Error> {
     let username_file_result = File::open("/etc/passwd");
 
     let mut username_file = match username_file_result {
@@ -21,7 +21,7 @@ pub fn read_username_from_file() -> Result<String, io::Error> {
 
 // much shorter version with the `?` operator.
 
-pub fn read_username_from_file_short() -> Result<String, io::Error> {
+fn read_username_from_file_short() -> Result<String, io::Error> {
     let mut username_file = File::open("/etc/passwd")?;
     let mut username = String::new();
     username_file.read_to_string(&mut username)?;
@@ -30,7 +30,7 @@ pub fn read_username_from_file_short() -> Result<String, io::Error> {
 
 // using chained `?` operators.
 
-pub fn read_username_from_file_chained() -> Result<String, io::Error> {
+fn read_username_from_file_chained() -> Result<String, io::Error> {
     let mut username = String::new();
     File::open("hello.txt")?.read_to_string(&mut username)?;
     Ok(username)
@@ -39,11 +39,11 @@ pub fn read_username_from_file_chained() -> Result<String, io::Error> {
 // one-liner, available in the api.
 use std::fs;
 
-pub fn read_username_from_file_oneliner() -> Result<String, io::Error> {
+fn read_username_from_file_oneliner() -> Result<String, io::Error> {
     fs::read_to_string("/etc/passwd")
 }
 
-pub fn main() {
+fn main() {
     match read_username_from_file() {
         Ok(s) => println!("{s}"),
         Err(e) => println!("{e}"),

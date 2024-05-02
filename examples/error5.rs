@@ -6,7 +6,7 @@ use std::io::Read;
 // which contains a function `report` that returns an `ExitCode`.
 // https://doc.rust-lang.org/std/process/trait.Termination.html
 
-pub fn main() -> Result<(), Box<dyn Error>> {
+fn main() -> Result<(), Box<dyn Error>> {
     let mut s = String::new();
     File::open("/etc/motd")?.read_to_string(&mut s)?; // Box<dyn Error> accepts any kind of Err.
     println!("{} -> {:#?}", s, ());
