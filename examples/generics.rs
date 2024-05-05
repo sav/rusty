@@ -83,8 +83,12 @@ impl Contains for Container {
         (&self.0 == number_1) && (&self.1 == number_2)
     }
 
-    fn first(&self) -> i32 { self.0 }
-    fn last(&self) -> i32 { self.1 }
+    fn first(&self) -> i32 {
+        self.0
+    }
+    fn last(&self) -> i32 {
+        self.1
+    }
 }
 
 /// Without associated types_ we would have to specify `A`, `B` and `C`, which
@@ -99,14 +103,17 @@ fn difference<C: Contains>(container: &C) -> i32 {
 }
 
 fn associated_types() {
- let number_1 = 3;
+    let number_1 = 3;
     let number_2 = 10;
 
     let container = Container(number_1, number_2);
 
-    println!("Does container contain {} and {}: {}",
-        &number_1, &number_2,
-        container.contains(&number_1, &number_2));
+    println!(
+        "Does container contain {} and {}: {}",
+        &number_1,
+        &number_2,
+        container.contains(&number_1, &number_2)
+    );
     println!("First number: {}", container.first());
     println!("Last number: {}", container.last());
 

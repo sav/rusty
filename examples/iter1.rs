@@ -57,7 +57,9 @@ fn iter_find() {
 /// `Option` and `Iterator` implement their fair share of HOFs.
 
 fn iter_hof() {
-    fn is_odd(n: u32) -> bool { n % 2 == 1 }
+    fn is_odd(n: u32) -> bool {
+        n % 2 == 1
+    }
     let upper = 1000;
     let sum_of_squared_odd_numbers: u32 = (0..)
         .map(|n| n * n) // All natural numbers squared
@@ -85,10 +87,10 @@ fn iter_into() {
     let v1 = vec![1, 2, 3];
     println!("{:?}", v1);
 
-    let v2: Vec<_> = v1.iter().map(|x| x+a).collect();
+    let v2: Vec<_> = v1.iter().map(|x| x + a).collect();
     println!("{:?}", v2);
 
-    let v3: Vec<_> = v1.into_iter().map(|x| x+a).collect();
+    let v3: Vec<_> = v1.into_iter().map(|x| x + a).collect();
     println!("{:?}", v3);
 
     // v1 unusable here.

@@ -6,7 +6,7 @@
 fn main() {
     ex1();
 }
-    
+
 #[derive(Debug)]
 struct Borrowed<'a> {
     x: &'a i32,
@@ -14,9 +14,7 @@ struct Borrowed<'a> {
 
 impl<'a> Default for Borrowed<'a> {
     fn default() -> Self {
-        Self {
-            x: &10,
-        }
+        Self { x: &10 }
     }
 }
 

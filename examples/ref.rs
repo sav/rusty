@@ -5,7 +5,7 @@
 ///
 /// When doing pattern matching or destructuring via the let binding, the `ref`
 /// keyword can be used to take references to the fields of a struct/tuple.
-/// 
+///
 /// ## Partial Moves
 ///
 /// Within the _destructuring_ of a single variable, both *by-move* and
@@ -25,7 +25,10 @@ fn main() {
 }
 
 #[derive(Clone, Copy)]
-struct Point { x: i32, y: i32 }
+struct Point {
+    x: i32,
+    y: i32,
+}
 
 fn ex1() {
     let c = 'Q';
@@ -41,19 +44,25 @@ fn ex2() {
 
     {
         // `ref` can be paired with `mut` to take mutable references.
-        let Point { x: _, y: ref mut mut_ref_to_y } = mutable_point;
+        let Point {
+            x: _,
+            y: ref mut mut_ref_to_y,
+        } = mutable_point;
         *mut_ref_to_y = 1;
     }
 
     println!("point is ({}, {})", point.x, point.y);
-    println!("mutable_point is ({}, {})", mutable_point.x, mutable_point.y);
+    println!(
+        "mutable_point is ({}, {})",
+        mutable_point.x, mutable_point.y
+    );
 }
 
 fn ex3() {
     #[derive(Debug)]
     struct Person {
         name: String,
-        age: Box<u8>, 
+        age: Box<u8>,
     }
 
     let person = Person {
@@ -71,4 +80,3 @@ fn ex3() {
     // println!("The person struct is {:?}", person); // error: borrow of partially moved value.
     println!("The person's age from person struct is {}", person.age);
 }
-

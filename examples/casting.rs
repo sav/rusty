@@ -18,7 +18,10 @@ pub fn main() {
 
     unsafe {
         println!(" 300.0 as u8 is : {}", 300.0_f32.to_int_unchecked::<u8>());
-        println!("-100.0 as u8 is : {}", (-100.0_f32).to_int_unchecked::<u8>());
+        println!(
+            "-100.0 as u8 is : {}",
+            (-100.0_f32).to_int_unchecked::<u8>()
+        );
         println!("   nan as u8 is : {}", f32::NAN.to_int_unchecked::<u8>());
     }
 }

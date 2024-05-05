@@ -5,7 +5,7 @@
 
 fn main() {
     let immutable_box = Box::new(0_u32);
-    println!("{}", immutable_box);    
+    println!("{}", immutable_box);
 
     let mut mutable_box = immutable_box;
     *mutable_box = 42;

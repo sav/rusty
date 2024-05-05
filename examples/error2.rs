@@ -39,8 +39,7 @@ pub fn handle_file_alt() {
 }
 
 pub fn handle_file_expect(path: &str) {
-    let f = File::open(path)
-        .expect("file not accessible: {path}");
+    let f = File::open(path).expect("file not accessible: {path}");
     println!("file is accessible: {f:?}");
 }
 

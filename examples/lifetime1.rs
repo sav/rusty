@@ -30,8 +30,8 @@ fn ex1() {
 }
 
 /// ## Example-2: Methods
-/// 
-/// Methods are annotated similarly to functions. 
+///
+/// Methods are annotated similarly to functions.
 
 fn ex2() {
     let mut owner = Owner(18);
@@ -51,7 +51,7 @@ impl Owner {
 }
 
 /// ## Example-3: Structs
-/// 
+///
 /// Annotation of lifetimes in structures are also similar to functions.
 
 fn ex3() {
@@ -117,7 +117,7 @@ use std::fmt::Debug; // Trait to bound with.
 /// Just like generic types can be bounded, lifetimes (themselves generic) use
 /// bounds as well. The `:` character has a slightly different meaning here, but `+`
 /// is the same. Note how the following read:
-/// 
+///
 ///  - `T: 'a`: _All_ references in `T` must outlive lifetime `'a`.
 ///  - `T: Trait + 'a`: Type `T` must implement trait `Trait` and all references
 ///    in `T` must outlive `'a`.
@@ -214,7 +214,7 @@ use rand::Fill;
 ///  - Make a `string` literal which has type: `&'static str`.
 ///
 /// ### Trait bound
-/// 
+///
 /// As a trait bound, it means the type does not contain any non-static
 /// references. For example:
 /// ```no_run
@@ -236,7 +236,7 @@ fn ex7() {
     fn coerce_static<'a>(_: &'a i32) -> &'a i32 {
         &ANSWER
     }
-    
+
     {
         let static_string = "I'm in read-only memory";
         println!("static_string: {}", static_string);
@@ -251,7 +251,7 @@ fn ex7() {
     println!("ANSWER: {ANSWER} stays accessible!");
 
     // A further example demonstrates how to use `Box::leak` to dynamically
-    // create `'static` references. 
+    // create `'static` references.
 
     fn random_vec() -> &'static [usize; 5] {
         let mut rng = rand::thread_rng();
@@ -275,7 +275,7 @@ fn ex7() {
 
     #[derive(Debug)]
     struct A {
-        value: i32
+        value: i32,
     }
 
     impl Drop for A {
@@ -285,13 +285,13 @@ fn ex7() {
     }
 
     fn leaked_a() -> &'static mut A {
-        let boxed = Box::new(A{ value: 31337 });
+        let boxed = Box::new(A { value: 31337 });
         Box::leak(boxed)
     }
 
     let a = A { value: 1 };
     println!("{a:?}");
-    
+
     {
         let a: &'static A = leaked_a();
         println!("{a:?}");
@@ -300,7 +300,7 @@ fn ex7() {
     println!("Leaked data has not yet been dropped at this point.");
 
     // Trait bound
-    
+
     fn print_it(input: impl Debug + 'static) {
         println!("'static value passed in is: {:?}", input);
     }

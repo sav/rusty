@@ -5,7 +5,7 @@
 
 /// When a type implements Copy, it forfeits its move semantics entirely.
 
-#[derive(Debug,Copy,Clone)]
+#[derive(Debug, Copy, Clone)]
 struct A {
     i: i64,
 }
@@ -17,7 +17,7 @@ impl A {
 }
 
 fn main() {
-    let mut x = A {i: 1};
+    let mut x = A { i: 1 };
     let y = move |x| -> A { x }(x); // don't move, copy.
 
     println!("{:?}", x);

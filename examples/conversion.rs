@@ -14,13 +14,8 @@
 #![allow(unused_variables)]
 #![allow(dead_code)]
 
+use std::convert::{From, Into, TryFrom, TryInto};
 use std::fmt;
-use std::convert::{
-    From,
-    Into,
-    TryFrom,
-    TryInto,
-};
 
 #[derive(Debug)]
 pub struct Number1 {
@@ -122,7 +117,7 @@ pub fn tryfrom_and_tryinto() {
 
 #[derive(Debug, PartialEq)]
 pub struct Circle {
-    radius: i32
+    radius: i32,
 }
 
 impl fmt::Display for Circle {

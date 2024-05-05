@@ -11,7 +11,7 @@
 //! storage values, and have no runtime behavior.
 //!
 //! ## Use Case
-//! 
+//!
 //! Phantom type parameters serves to somewhat _"bind"_ type specifications
 //! _"together"_.
 //!
@@ -62,7 +62,7 @@ fn main() {
     let two_feet = one_foot + one_foot;
     let two_meters = one_meter + one_meter;
     // let one_feter = one_foot + one_meter; // Error: type mismatch.
-    
+
     println!("one foot + one_foot = {:?} in", two_feet.0);
     println!("one meter + one_meter = {:?} mm", two_meters.0);
 }
