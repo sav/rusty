@@ -3,8 +3,8 @@
 
 //! # Inline assembly
 //!
-//! - [https://doc.rust-lang.org/rust-by-example/unsafe/asm.html]
-//! - [https://doc.rust-lang.org/stable/reference/inline-assembly.html]
+//! - [Rust by Example: Unsafe - Inline assembly](https://doc.rust-lang.org/rust-by-example/unsafe/asm.html)
+//! - [Rust Reference: Inline assembly](https://doc.rust-lang.org/stable/reference/inline-assembly.html)
 
 use std::arch::asm;
 

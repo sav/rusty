@@ -40,7 +40,7 @@ fn ex1_hashmap() {
 
 /// Think of a [`HashSet`] as a [`HashMap`] where we just care about the keys
 /// and that guarantees to have no duplicate elements. [`HashSet`] is just one
-/// implementation. (see also: [`BTreeSet`])
+/// implementation. (see also: `BTreeSet`)
 ///
 /// `HashSet<T>` is, in actuality, just a wrapper around `HashMap<T, ()>`.
 ///

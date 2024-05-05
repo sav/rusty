@@ -3,8 +3,8 @@
 
 use std::path::Path;
 
-/// Be sure to check at other [`Path`] methods ([`posix::Path`] or
-/// [`windows::Path`]) and the `Metadata` struct.
+/// Be sure to check at other `Path` methods (`posix::Path` or
+/// `windows::Path`) and the `Metadata` struct.
 fn main() {
     let path = Path::new(".");
 
