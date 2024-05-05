@@ -1,8 +1,7 @@
 // misc.rs, Examples from the book "Rust Programming Language"
 // Copyright (C) 2024, Savio Sena <savio.sena@gmail.com>
 
-#![allow(dead_code)]
-#![allow(unused_variables)]
+#![allow(dead_code,unused_variables,unused_assignments,irrefutable_let_patterns)]
 
 //! Further examples form ["_The rust programming language_"](https://rust-book.cs.brown.edu).
 

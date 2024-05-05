@@ -1,6 +1,8 @@
 // apdx.rs, Examples from the book "Rust Programming Language"
 // Copyright (C) 2024, Savio Sena <savio.sena@gmail.com>
 
+#![allow(dead_code)]
+
 /// # Raw Identifiers
 ///
 /// Raw identifiers are the syntax that lets you use keywords where they

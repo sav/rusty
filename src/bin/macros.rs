@@ -1,6 +1,8 @@
 // macros.rs, Examples from the book "Rust Programming Language"
 // Copyright (C) 2024, Savio Sena <savio.sena@gmail.com>
 
+#![allow(unused_mut)]
+
 //! # Macros
 
 /// ## The Difference Between Macros and Functions
