@@ -33,6 +33,7 @@ macros_derive = { path = "src/lib/macros_derive" }
 
 [dev-dependencies]
 env_logger = "0.5"
+pretty_assertions = "1"
 
 [[bin]]
 name = "rusty"
