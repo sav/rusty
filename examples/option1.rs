@@ -165,7 +165,7 @@ fn ex3_unpacking_options_or() {
 
     let first_available_fruit = no_fruit.or(orange).or(apple); // `or` moves its argument.
     println!("first_available_fruit: {:?}", first_available_fruit); // Some(Orange)
-    // println!("Variable apple was moved, so this line won't compile: {:?}", apple); // error.
+                                                                    // println!("Variable apple was moved, so this line won't compile: {:?}", apple); // error.
 }
 
 /// `or_else()` is chainable, evaluates lazily, keeps empty value intact.
@@ -188,7 +188,7 @@ fn ex3_unpacking_options_or_else() {
 
 /// `get_or_insert()` evaluates eagerly, modifies empty value in place
 fn ex3_unpacking_options_get_or_insert() {
-   let mut my_fruit: Option<Fruit> = None;
+    let mut my_fruit: Option<Fruit> = None;
     let apple = Fruit::Apple;
     let first_available_fruit = my_fruit.get_or_insert(apple);
     println!("first_available_fruit is: {:?}", first_available_fruit); // Apple
@@ -197,13 +197,12 @@ fn ex3_unpacking_options_get_or_insert() {
 
 /// `get_or_insert_with()` evaluates lazily, modifies empty value in place.
 fn ex3_unpacking_options_get_or_insert_with() {
-   let mut my_fruit: Option<Fruit> = None;
+    let mut my_fruit: Option<Fruit> = None;
     let get_lemon_as_fallback = || {
         println!("Providing lemon as fallback");
         Fruit::Lemon
     };
-    let first_available_fruit = my_fruit
-        .get_or_insert_with(get_lemon_as_fallback);
+    let first_available_fruit = my_fruit.get_or_insert_with(get_lemon_as_fallback);
     println!("first_available_fruit is: {:?}", first_available_fruit); // Lemon
     println!("my_fruit is: {:?}", my_fruit); // Some(Lemon)
 
@@ -229,6 +228,13 @@ fn ex3_unpacking_options() {
     ex3_unpacking_options_get_or_insert_with();
 }
 
+fn ex4_turbofish() {
+    let none_int = None::<i32>;
+    let some_float = Some(0f32);
+
+    println!("{none_int:?}, {some_float:?}");
+}
+
 fn main() {
     println!("-=- ex1_combinators_map() -=-");
     ex1_combinators_map();
@@ -236,4 +242,6 @@ fn main() {
     ex2_combinators_and_then();
     println!("-=- ex3_unpacking_options() -=-");
     ex3_unpacking_options();
+    println!("-=- ex4_turbofish()");
+    ex4_turbofish();
 }

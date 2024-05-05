@@ -1,6 +1,8 @@
 // result1.rs, Examples from the book "Rust by Example"
 // Copyright (C) 2024, Savio Sena <savio.sena@gmail.com>
 
+#![allow(dead_code)]
+
 use std::num::ParseIntError;
 
 fn ex1_map() {
@@ -130,6 +132,38 @@ fn ex4_iter() {
     println!("Errors: {:?}", errors);
 }
 
+fn ex5_usecase1() {
+    #[derive(Debug)]
+    pub enum MathError {
+        DivisionByZero,
+        NonPositiveLogarithm,
+        NegativeSquareRoot,
+    }
+
+    pub type MathResult = Result<f64, MathError>;
+
+    pub fn div(x: f64, y: f64) -> MathResult {
+        if y == 0.0 {
+            Err(MathError::DivisionByZero)
+        } else {
+            Ok(x / y)
+        }
+    }
+
+    let (x, y) = (0.0, 0.0);
+
+    match div(x, y) {
+        Ok(result) => println!("x / y = {}", result),
+        Err(why) => println!(
+            "error: {}",
+            match why {
+                MathError::DivisionByZero => "Divisao por zero",
+                _ => "other",
+            }
+        ),
+    }
+}
+
 /// `Result` is a richer version of the `Option` type that describes possible
 /// _error_ instead of possible _absence_.
 ///
@@ -145,4 +179,6 @@ fn main() {
     ex3_simple_ret();
     println!("-=- ex4_iter() -=-");
     ex4_iter();
+    println!("-=- ex5_usecase1() -=-");
+    ex5_usecase1();
 }
