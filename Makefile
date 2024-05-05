@@ -78,6 +78,9 @@ size: ./target/debug/rusty
 	rust-size ./target/debug/rusty
 	cargo size --release -- -A -x
 
+count:
+	@find echo/ examples/ src/ tests/ -iname '*.rs' | xargs wc -l | tail -1 | cut -f2 -d' '
+
 ## For more about cargo-binutils:
 ##  https://crates.io/crates/cargo-binutils
 
