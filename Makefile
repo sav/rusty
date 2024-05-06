@@ -20,7 +20,7 @@ run:
 
 .PHONY: test
 test:
-	cargo test
+	RUST_TEST_NOCAPTURE=1 cargo test
 
 .PHONY: echo
 echo:
