@@ -1,7 +1,12 @@
 // misc.rs, Examples from the book "Rust Programming Language"
 // Copyright (C) 2024, Savio Sena <savio.sena@gmail.com>
 
-#![allow(dead_code,unused_variables,unused_assignments,irrefutable_let_patterns)]
+#![allow(
+    dead_code,
+    unused_variables,
+    unused_assignments,
+    irrefutable_let_patterns
+)]
 
 //! Further examples form ["_The rust programming language_"](https://rust-book.cs.brown.edu).
 
@@ -3254,6 +3259,79 @@ fn oop1() {
 ///
 /// However, we did get **extra flexibility** in the code, so it’s a trade-off
 /// to consider.
+///
+/// ## Object Safety Is Required for Trait Objects
+///
+/// You can only make *object safe* traits into trait objects. Some complex
+/// rules govern all the properties that make a trait object safe, but in
+/// practice, only two rules are relevant. A trait is object safe if all the
+/// methods defined in the trait have the following properties:
+///
+/// * The return type isn’t `Self`.
+/// * There are no generic type parameters.
+///
+/// The `Self` keyword is an alias for the type we’re implementing the traits or
+/// methods on. Trait objects must be object safe because once you’ve used a trait
+/// object, Rust no longer knows the concrete type that’s implementing that trait.
+/// If a trait method returns the concrete `Self` type, but a trait object forgets
+/// the exact type that `Self` is, there is no way the method can use the original
+/// concrete type. The same is true of generic type parameters that are filled in
+/// with concrete type parameters when the trait is used: the concrete types become
+/// part of the type that implements the trait. When the type is forgotten through
+/// the use of a trait object, there is no way to know what types to fill in the
+/// generic type parameters with.
+///
+/// An example of a trait whose methods are not object safe is the standard
+/// library’s `Clone` trait. The signature for the `clone` method in the `Clone`
+/// trait looks like this:
+///
+/// ```rust
+/// pub trait Clone {
+///     fn clone(&self) -> Self;
+/// }
+/// ```
+///
+/// The `String` type implements the `Clone` trait, and when we call the `clone`
+/// method on an instance of `String` we get back an instance of `String`.
+/// Similarly, if we call `clone` on an instance of `Vec<T>`, we get back an
+/// instance of `Vec<T>`. The signature of `clone` needs to know what type will
+/// stand in for `Self`, because that’s the return type.
+///
+/// The compiler will indicate when you’re trying to do something that violates the
+/// rules of object safety in regard to trait objects. For example, let’s say we
+/// tried to implement the `Screen` struct in Listing 17-4 to hold types that
+/// implement the `Clone` trait instead of the `Draw` trait, like this:
+///
+/// ```rust,ignore,does_not_compile
+/// pub struct Screen {
+///    pub components: Vec<Box<dyn Clone>>,
+/// }
+/// ```
+///
+/// We would get this error:
+///
+/// ```console
+/// $ cargo build
+///    Compiling gui v0.1.0 (file:///projects/gui)
+/// error[E0038]: the trait `Clone` cannot be made into an object
+///  --> src/lib.rs:2:29
+///   |
+/// 2 |     pub components: Vec<Box<dyn Clone>>,
+///   |                             ^^^^^^^^^ `Clone` cannot be made into an object
+///   |
+///   = note: the trait cannot be made into an object because it requires `Self: Sized`
+///   = note: for a trait to be "object safe" it needs to allow building a vtable to allow the call to be resolvable dynamically; for more information visit <https://doc.rust-lang.org/reference/items/traits.html#object-safety>
+///
+/// For more information about this error, try `rustc --explain E0038`.
+/// error: could not compile `gui` due to previous error
+/// ```
+///
+/// This error means you can’t use this trait as a trait object in this way. If
+/// you’re interested in more details on object safety, see [Rust RFC 255] or
+/// check the [object safety section](https://doc.rust-lang.org/reference/items/traits.html#object-safety)
+/// in the [Rust Reference](https://doc.rust-lang.org/reference/).
+///
+/// [Rust RFC 255]: https://github.com/rust-lang/rfcs/blob/master/text/0255-object-safety.md
 
 fn oop2() {
     let components: Vec<Box<dyn gui::Draw>> = vec![
@@ -4396,7 +4474,7 @@ fn advanced_closure1() {
     let list_of_numbers = vec![1, 2, 3];
     let _list_of_strings: Vec<String> = // access `to_string` from `ToString` trait.
         list_of_numbers.iter().map(ToString::to_string).collect();
-     // the standard lib has `ToString` implemented for any type that implements `Display`.
+    // the standard lib has `ToString` implemented for any type that implements `Display`.
 
     // We can use `enum` initializer functions as function pointers that
     // implement the closure traits, which means we can specify the initializer
