@@ -63,6 +63,20 @@ doc:
 	cargo doc --package echo --target-dir=target/doc/echo
 	cargo doc --examples --target-dir=target/doc/examples --document-private-items
 
+## Generate intermediate code
+
+emit:
+	RUSTFLAGS="-C opt-level=1 --emit=asm,llvm-ir,mir" cargo build --release
+
+ast-tree:
+	RUSTFLAGS="-Z unpretty=ast-tree" cargo build
+
+hir-tree:
+	RUSTFLAGS="-Z unpretty=hir-tree" cargo build
+
+hir:
+	RUSTFLAGS="-Z unpretty=hir" cargo build
+
 ## The commands below are merely illustrative.
 
 modules-tree-bin:
