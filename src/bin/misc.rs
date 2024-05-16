@@ -5,7 +5,8 @@
     dead_code,
     unused_variables,
     unused_assignments,
-    irrefutable_let_patterns
+    irrefutable_let_patterns,
+    non_local_definitions,
 )]
 
 //! Further examples form ["_The rust programming language_"](https://rust-book.cs.brown.edu).

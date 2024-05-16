@@ -1,7 +1,7 @@
 // macros.rs, Examples from the book "Rust Programming Language"
 // Copyright (C) 2024, Savio Sena <savio.sena@gmail.com>
 
-#![allow(unused_mut)]
+#![allow(unused_mut, non_local_definitions)]
 
 //! # Macros
 
