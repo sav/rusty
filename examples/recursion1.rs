@@ -1,11 +1,11 @@
-// recursion1.rs, Examples from the book "Rust by Example"
+// recursion1.rs,
 // Copyright (C) 2024, Savio Sena <savio.sena@gmail.com>
 
-// In Rust, as well as in many other languages, tail-call-optimization is not guaranteed
-// by the compiler, therefore recursive calls can eventually overflow the stack (by pushing
-// too many return addresses and arguments).
-//
-// One way to avoid these problems is to use loops instead of function calls.
+//! In Rust, as well as in many other languages, tail-call-optimization is not
+//! guaranteed by the compiler, therefore recursive calls can eventually
+//! overflow the stack (by pushing too many return addresses and arguments onto
+//! it). One way to avoid these problems is to use loops instead of function
+//! calls.
 
 #![allow(dead_code, unused_variables, unused_mut)]
 
@@ -25,9 +25,9 @@ fn g1(ini: i64) -> i64 {
     'a: loop {
         'b: loop {
             if i >= MAX {
-                break 'a r
+                break 'a r;
             } else {
-                continue 'b
+                continue 'b;
             }
         }
     }

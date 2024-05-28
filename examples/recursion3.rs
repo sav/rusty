@@ -1,11 +1,13 @@
-// recursion3.rs, Examples from the book "Rust by Example"
+// recursion3.rs,
 // Copyright (C) 2024, Savio Sena <savio.sena@gmail.com>
 
 //! # Tail Call Elimination
 //!
 //! We'll see a few examples of how to translate a recursion algorithm to use
-//! loops. Please see the *References* section for a list of sources used in
-//! this study.
+//! loops. The following study is based on:
+//! 
+//! - [Tricks of the trade: Recursion to Iteration, Part 1: The Simple Method, secret features, and accumulators](https://blog.moertel.com/posts/2013-05-11-recursive-to-iterative.html)
+//! - [From Recursive to Iterative Functions](https://www.baeldung.com/cs/convert-recursion-to-iteration)
 //!
 //! ## The Simple Method
 //!
@@ -14,12 +16,6 @@
 //!  2. Introduce a one-shot loop around the function body.
 //!  3. Convert tail calls into `continue` statements.
 //!  4. Tidy the code and make it more idiomatic.
-//! 
-//! ## References
-//! 
-//! - [Tricks of the trade: Recursion to Iteration, Part 1: The Simple Method, secret features, and accumulators](https://blog.moertel.com/posts/2013-05-11-recursive-to-iterative.html)
-//! - [From Recursive to Iterative Functions](https://www.baeldung.com/cs/convert-recursion-to-iteration)
-//! 
 
 #![allow(unused_variables)]
 
@@ -43,7 +39,7 @@ pub fn ex_a_recursive(i: i64) -> i64 {
     }
 }
 
-/// Convert recursive calls to tail calls. 
+/// Convert recursive calls to tail calls.
 #[no_mangle]
 pub fn ex_a_tailcall(i: i64, c: i64) -> i64 {
     if i >= MAX {
@@ -59,10 +55,10 @@ pub fn ex_a_tailcall(i: i64, c: i64) -> i64 {
 pub fn ex_a_oneshot(mut i: i64, mut c: i64) -> i64 {
     loop {
         if i >= MAX {
-            break i + c
-        } 
+            break i + c;
+        }
         (i, c) = (i + 1, c + i);
-        continue
+        continue;
     }
 }
 

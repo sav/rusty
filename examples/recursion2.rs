@@ -1,4 +1,4 @@
-// recursion2.rs, Examples from the book "Rust by Example"
+// recursion2.rs,
 // Copyright (C) 2024, Savio Sena <savio.sena@gmail.com>
 
 #![allow(dead_code)]
