@@ -235,6 +235,162 @@ fn ex4_turbofish() {
     println!("{none_int:?}, {some_float:?}");
 }
 
+fn ex5_api() {
+    // --- as_mut ---
+    let mut x = Some(2);
+    match x.as_mut() {
+        Some(v) => *v = 42,
+        None => {}
+    }
+    assert_eq!(x, Some(42));
+    println!("{}", x.unwrap());
+
+    // --- as_ref ---
+    let text: Option<String> = Some("hello world!".to_string());
+    // cast `Option<String>` to `Option<&String>` then consume *that* with map,
+    // leaving `text` on the stack.
+    let text_length: Option<usize> = text.as_ref().map(|s| s.len());
+    println!(
+        "still can print text: {} (length: {})",
+        text.unwrap(),
+        text_length.unwrap()
+    );
+
+    // --- as_deref ---
+    // Converts from `Option<T>` (or `&Option<T>`) to `Option<&T::Target>`,
+    // where `Target` is a associated type of `Deref`.
+    // Leaves the original `Option` in-place, creating a new one with a
+    // reference to the original one, aditionally coercing the contents via
+    // `Deref`.
+    let x: Option<String> = Some("hey".to_owned());
+    assert_eq!(x.as_deref(), Some("hey"));
+    let x: Option<String> = None;
+    assert_eq!(x.as_deref(), None);
+
+    // --- as_deref_mut ---
+    // Converts from `Option<T>` (or `&Option<T>`) to `Option<&mut T::Target>`,
+    // where `Target` is a associated type of `Deref`.
+    let mut x: Option<String> = Some("hey".to_owned());
+    assert_eq!(
+        x.as_deref_mut().map(|x| {
+            x.make_ascii_uppercase();
+            x
+        }),
+        Some("HEY".to_owned().as_mut_str())
+    );
+
+    // --- take ---
+    let mut x = Some(2);
+    let y = x.take();
+    println!("{:?}, {:?}", x, y);
+
+    // --- is_some ---
+    let x = Some(1);
+    assert_eq!(x.is_some(), true);
+    let y = None::<i128>;
+    assert_eq!(y.is_some(), false);
+    println!("{}, {}", x.is_some(), y.is_some());
+
+    // --- is_none
+    let x: Option<u32> = Some(2);
+    assert_eq!(x.is_none(), false);
+    let x: Option<u32> = None;
+    assert_eq!(x.is_none(), true);
+    println!("{}, {}", x.is_none(), y.is_none());
+
+    // --- and ---
+    let x = Some(2);
+    let y: Option<&str> = None;
+    assert_eq!(x.and(y), None);
+    println!("{:?}, {:?}", x, y);
+    let x = Some(1);
+    let y = Some("foo");
+    assert_eq!(x.and(y), Some("foo"));
+    println!("{:?}, {:?}", x, y);
+
+    // --- and_then ---
+    fn sq_then_to_string(x: u32) -> Option<String> {
+        x.checked_mul(x).map(|sq| sq.to_string())
+    }
+    assert_eq!(Some(2).and_then(sq_then_to_string), Some(4.to_string()));
+    assert_eq!(Some(1_000_000).and_then(sq_then_to_string), None); // overflowed!
+    assert_eq!(None.and_then(sq_then_to_string), None);
+
+    // --- is_some_and ---
+    let x: Option<u32> = Some(2);
+    assert_eq!(x.is_some_and(|x| x > 1), true);
+    let x: Option<u32> = Some(0);
+    assert_eq!(x.is_some_and(|x| x > 1), false);
+    let x: Option<u32> = None;
+    assert_eq!(x.is_some_and(|x| x > 1), false);
+
+    // --- inspect ---
+    let list = vec![1, 2, 3];
+    let _ = list
+        .get(1)
+        .inspect(|x| println!("got: {x}"))
+        .expect("list should be long enough");
+    list.get(5).inspect(|x| println!("got: {x}")); // prints nothing
+
+    // --- map ---
+    let maybe_some_string = Some(String::from("hello world!"));
+    // `Option::map` takes self *by value*, consuming `maybe_some_string`
+    let maybe_some_len = maybe_some_string.map(|s| s.len());
+    assert_eq!(maybe_some_len, Some(12));
+    let x: Option<&str> = None;
+    assert_eq!(x.map(|s| s.len()), None);
+
+    // --- map_or ---
+    let x = Some("foo");
+    assert_eq!(x.map_or(42, |v| v.len()), 3);
+    let x: Option<&str> = None;
+    assert_eq!(x.map_or(42, |v| v.len()), 42);
+
+    // --- map_or_else ---
+    let k = 21;
+    let x = Some("foo");
+    assert_eq!(x.map_or_else(|| 2 * k, |v| v.len()), 3);
+    let x: Option<&str> = None;
+    assert_eq!(x.map_or_else(|| 2 * k, |v| v.len()), 42);
+
+    // --- flatten ---
+    // Flattening only removes one level of nesting at a time:
+    let x: Option<Option<Option<u32>>> = Some(Some(Some(6)));
+    assert_eq!(Some(Some(6)), x.flatten());
+    assert_eq!(Some(6), x.flatten().flatten());
+
+    // --- zip ---
+    let x = Some(1);
+    let y = Some("hi");
+    let z = None::<u8>;
+    assert_eq!(x.zip(y), Some((1, "hi")));
+    assert_eq!(x.zip(z), None);
+
+    // --- unzip ---
+    let x = Some((1, "hi"));
+    let y = None::<(u8, u32)>;
+    assert_eq!(x.unzip(), (Some(1), Some("hi")));
+    assert_eq!(y.unzip(), (None, None));
+
+    // --- copied ---
+    // Maps an `Option<&T>` to an `Option<T>` by _copying_ the contents of the option.
+    // There's a version of `copied` for `Option<&mut T>` as well.
+    let x = 12;
+    let opt_x = Some(&x);
+    assert_eq!(opt_x, Some(&12));
+    let copied = opt_x.copied();
+    assert_eq!(copied, Some(12));
+
+    // --- cloned ---
+    // Maps an `Option<&mut T>` to an `Option<T>` by _cloning_ the contents of the option.
+    // There's a version of `cloned` for `Option<&T>` as well.
+    let mut x = 12;
+    let opt_x = Some(&mut x);
+    assert_eq!(opt_x, Some(&mut 12));
+    let cloned = opt_x.cloned();
+    assert_eq!(cloned, Some(12));
+}
+
 fn main() {
     println!("-=- ex1_combinators_map() -=-");
     ex1_combinators_map();
@@ -244,4 +400,6 @@ fn main() {
     ex3_unpacking_options();
     println!("-=- ex4_turbofish()");
     ex4_turbofish();
+    println!("-=- ex5_api()");
+    ex5_api();
 }
