@@ -186,7 +186,28 @@ fn ex_1() {
     assert_eq!(v, &[]);
 }
 
+use std::collections::HashMap;
+
+fn ex_2() {
+    let mut h: HashMap<i32, i32> = HashMap::new();
+    let mut v = vec![1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6];
+    let mut i = 0;
+
+    while i < v.len() {
+        if h.contains_key(&v[i]) {
+            v.remove(i);
+        } else {
+            h.insert(v[i], 1);
+            i += 1;
+        }
+    }
+
+    println!("{v:?}");
+}
+
 fn main() {
     println!("-=- ex_1 -=-");
     ex_1();
+    println!("-=- ex_2 -=-");
+    ex_2();
 }

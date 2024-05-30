@@ -291,7 +291,7 @@ fn ex5_api() {
     assert_eq!(y.is_some(), false);
     println!("{}, {}", x.is_some(), y.is_some());
 
-    // --- is_none
+    // --- is_none ---
     let x: Option<u32> = Some(2);
     assert_eq!(x.is_none(), false);
     let x: Option<u32> = None;
