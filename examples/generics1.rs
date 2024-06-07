@@ -1,4 +1,4 @@
-// generics.rs, Examples from the book "Rust by Example"
+// generics1.rs, Examples from the book "Rust by Example"
 // Copyright (C) 2024, Savio Sena <savio.sena@gmail.com>
 
 struct Cardinal;
