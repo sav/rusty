@@ -7,6 +7,15 @@
 
 use std::str;
 
+fn ex0() {
+    let s = "abcdefghi-a";
+    assert_eq!(s.find('a'), Some(0));
+    assert_eq!(s.rfind('a'), Some(10));
+    assert_eq!(s.contains("abc"), true);
+    assert_eq!(s.starts_with("abc"), true);
+    assert_eq!(s.ends_with("i-a"), true);
+}
+
 fn ex1() {
     let pangram: &'static str = "the quick brown fox jumps over the lazy dog";
     println!("Pangram: {}", pangram);
@@ -94,6 +103,8 @@ fn ex2() {
 }
 
 fn main() {
+    println!("-=- ex0() -=-");
+    ex0();
     println!("-=- ex1() -=-");
     ex1(); // basic
     println!("-=- ex2() -=-");
